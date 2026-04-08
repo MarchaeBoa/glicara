@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Glicara — Controle sua diabetes com inteligencia</title>
+<meta name="description" content="Plataforma inteligente para pessoas com diabetes. Lembretes, glicemia, alimentacao, medicos e comunidade."/>
+<meta name="theme-color" content="#2563EB"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']}}}}</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#fff;color:#0F172A;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html{scroll-behavior:smooth}
+a{text-decoration:none;color:inherit}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes float2{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(37,99,235,.35)}70%{box-shadow:0 0 0 14px rgba(37,99,235,0)}100%{box-shadow:0 0 0 0 rgba(37,99,235,0)}}
+@keyframes morph{0%,100%{border-radius:60% 40% 30% 70%/60% 30% 70% 40%}50%{border-radius:30% 60% 70% 40%/50% 60% 30% 60%}}
+@keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes bgPan{0%{background-position:30% 50%;transform:scale(1.05)}50%{background-position:70% 40%;transform:scale(1.12)}100%{background-position:40% 60%;transform:scale(1.08)}}
+@keyframes bgPanCta{0%{background-position:20% 50%;transform:scale(1.02)}50%{background-position:80% 45%;transform:scale(1.1)}100%{background-position:50% 55%;transform:scale(1.06)}}
+@keyframes bgPanHow{0%{background-position:40% 50%;transform:scale(1.03)}50%{background-position:60% 40%;transform:scale(1.08)}100%{background-position:50% 60%;transform:scale(1.05)}}
+@keyframes gradient-x{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes count-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dash{to{stroke-dashoffset:0}}
+@keyframes scale-in{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.reveal.vis{opacity:1;transform:translateY(0)}
+/* Fallback: if JS observer fails, show all after 2s */
+@media(prefers-reduced-motion:no-preference){.reveal-fallback .reveal{opacity:1!important;transform:none!important}}
+.rd1{transition-delay:.1s}.rd2{transition-delay:.2s}.rd3{transition-delay:.3s}.rd4{transition-delay:.4s}.rd5{transition-delay:.5s}
+
+/* ── Nav ── */
+nav{transition:all .35s}
+nav.scrolled{background:rgba(255,255,255,.88);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid rgba(0,0,0,.05);box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.nav-link{position:relative}.nav-link::after{content:'';position:absolute;bottom:-4px;left:50%;width:0;height:2px;background:#2563EB;border-radius:2px;transition:all .3s;transform:translateX(-50%)}.nav-link:hover::after{width:100%}
+
+/* ── Buttons ── */
+.btn-p{background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;box-shadow:0 4px 16px rgba(37,99,235,.3),0 0 0 0 rgba(37,99,235,0);transition:all .3s}
+.btn-p:hover{box-shadow:0 8px 28px rgba(37,99,235,.35),0 0 0 4px rgba(37,99,235,.08);transform:translateY(-3px)}
+.btn-s{background:#F8FAFC;color:#1E293B;border:1px solid #E2E8F0;transition:all .3s}
+.btn-s:hover{background:#F1F5F9;border-color:#CBD5E1;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.04)}
+
+/* ── Cards ── */
+.card-hover{transition:all .4s cubic-bezier(.16,1,.3,1)}
+.card-hover:hover{transform:translateY(-8px);box-shadow:0 24px 48px rgba(0,0,0,.08)}
+.glass{background:rgba(255,255,255,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.5)}
+
+/* ── Gradient text ── */
+.grad-text{background:linear-gradient(135deg,#2563EB 0%,#7C3AED 50%,#2563EB 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradient-x 4s ease infinite}
+
+/* ── Morphing blob ── */
+.blob{animation:morph 8s ease-in-out infinite}
+
+/* ── Ticker ── */
+.ticker-track{display:flex;animation:ticker 30s linear infinite;width:max-content}
+.ticker-track:hover{animation-play-state:paused}
+
+/* ── FAQ ── */
+.faq-a{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.16,1,.3,1)}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+
+/* ── Img cover ── */
+.img-cover{object-fit:cover;width:100%;height:100%}
+
+/* ── Mobile menu ── */
+#mm{transition:opacity .3s,visibility .3s}
+#mm.hidden{opacity:0;visibility:hidden}
+#mm:not(.hidden){opacity:1;visibility:visible}
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║              NAVIGATION                     ║
+     ╚══════════════════════════════════════════════╝ -->
+<nav id="nav" class="fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 h-[72px] flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2.5 group">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-600/25 group-hover:shadow-blue-600/40 transition-shadow">
+        <i data-lucide="heart-pulse" class="w-5 h-5 text-white"></i>
+      </div>
+      <span class="text-xl font-extrabold tracking-tight">Gli<span class="text-blue-600">cara</span></span>
+    </a>
+    <div class="hidden lg:flex items-center gap-8">
+      <a href="#beneficios" class="nav-link text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors">Beneficios</a>
+      <a href="#como-funciona" class="nav-link text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors">Como Funciona</a>
+      <a href="#funcionalidades" class="nav-link text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors">Funcionalidades</a>
+      <a href="#medicos" class="nav-link text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors">Medicos</a>
+      <a href="#planos" class="nav-link text-[13px] font-semibold text-slate-500 hover:text-slate-900 transition-colors">Planos</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="login.html" class="hidden sm:inline text-[13px] font-semibold text-slate-500 hover:text-blue-600 transition-colors">Entrar</a>
+      <a href="cadastro.html" class="btn-p inline-flex items-center gap-2 text-[13px] font-bold px-5 py-2.5 rounded-xl">Comecar gratis <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+      <button class="lg:hidden p-2 text-slate-500" id="openMM"><i data-lucide="menu" class="w-5 h-5"></i></button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mm" class="hidden fixed inset-0 z-40 bg-white flex flex-col pt-20 px-6 pb-8">
+  <button class="absolute top-5 right-5 p-2 text-slate-400" id="closeMM"><i data-lucide="x" class="w-6 h-6"></i></button>
+  <div class="flex flex-col gap-1">
+    <a href="#beneficios" class="mml py-3 text-lg font-semibold text-slate-700">Beneficios</a>
+    <a href="#como-funciona" class="mml py-3 text-lg font-semibold text-slate-700">Como Funciona</a>
+    <a href="#funcionalidades" class="mml py-3 text-lg font-semibold text-slate-700">Funcionalidades</a>
+    <a href="#planos" class="mml py-3 text-lg font-semibold text-slate-700">Planos</a>
+  </div>
+  <div class="mt-auto space-y-3">
+    <a href="login.html" class="btn-s block text-center py-3 rounded-xl text-sm font-semibold">Entrar</a>
+    <a href="cadastro.html" class="btn-p block text-center py-3 rounded-xl text-sm font-bold">Comecar gratis</a>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║               HERO SECTION                  ║
+     ╚══════════════════════════════════════════════╝ -->
+<section class="relative min-h-screen flex items-center overflow-hidden pt-20 pb-16 lg:pb-0">
+  <!-- Background: Medical image -->
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('bg-hero.avif');animation:bgPan 25s ease-in-out infinite alternate"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-white/[.92] via-white/75 to-white/40"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/85"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 w-full">
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+      <!-- Left content -->
+      <div class="relative z-10">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold px-4 py-2 rounded-full mb-8" style="animation:fadeUp .8s .1s both">
+          <span class="relative flex h-2.5 w-2.5"><span class="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping"></span><span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500"></span></span>
+          +2.400 pessoas ja usam — Plataforma #1 para diabetes
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-[40px] sm:text-[52px] lg:text-[64px] font-black leading-[1.05] tracking-tight mb-6" style="animation:fadeUp .8s .2s both">
+          Controle sua<br>diabetes com<br><span class="grad-text">inteligencia</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-lg lg:text-xl text-slate-500 leading-relaxed max-w-lg mb-8" style="animation:fadeUp .8s .35s both">
+          Lembretes de insulina, registro de glicemia, alimentacao inteligente, medicos proximos e comunidade de apoio — <strong class="text-slate-700">tudo em um so lugar.</strong>
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap gap-3 mb-10" style="animation:fadeUp .8s .45s both">
+          <a href="cadastro.html" class="btn-p inline-flex items-center gap-2.5 text-[15px] font-bold px-8 py-4 rounded-2xl">
+            <i data-lucide="zap" class="w-5 h-5"></i> Comecar gratis
+          </a>
+          <a href="#como-funciona" class="btn-s inline-flex items-center gap-2.5 text-[15px] font-semibold px-8 py-4 rounded-2xl">
+            <i data-lucide="play-circle" class="w-5 h-5 text-blue-600"></i> Ver como funciona
+          </a>
+        </div>
+
+        <!-- Social Proof -->
+        <div class="flex items-center gap-5" style="animation:fadeUp .8s .55s both">
+          <div class="flex -space-x-3">
+            <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face" class="w-11 h-11 rounded-full border-[3px] border-white object-cover shadow" alt=""/>
+            <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face" class="w-11 h-11 rounded-full border-[3px] border-white object-cover shadow" alt=""/>
+            <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=100&h=100&fit=crop&crop=face" class="w-11 h-11 rounded-full border-[3px] border-white object-cover shadow" alt=""/>
+            <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&h=100&fit=crop&crop=face" class="w-11 h-11 rounded-full border-[3px] border-white object-cover shadow" alt=""/>
+            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face" class="w-11 h-11 rounded-full border-[3px] border-white object-cover shadow" alt=""/>
+          </div>
+          <div>
+            <div class="flex items-center gap-0.5 text-amber-400">
+              <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-amber-400"></i>
+              <span class="text-sm font-bold text-slate-700 ml-1">4.9</span>
+            </div>
+            <p class="text-sm text-slate-500 mt-0.5">de <strong class="text-slate-700">2.400+</strong> avaliacoes</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right — Hero visual -->
+      <div class="relative" style="animation:fadeUp .9s .4s both">
+        <!-- Main image -->
+        <div class="relative rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-slate-200/70">
+          <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&h=650&fit=crop&q=85" alt="Profissional de saude com tecnologia" class="w-full h-auto" loading="eager"/>
+          <!-- Gradient overlay bottom -->
+          <div class="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white/80 to-transparent"></div>
+          <!-- Floating stats card -->
+          <div class="absolute bottom-5 left-5 right-5 glass rounded-2xl p-5 shadow-2xl" style="animation:float 6s ease-in-out infinite">
+            <div class="flex items-center gap-4">
+              <div class="flex-1 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center border border-green-100">
+                  <i data-lucide="check-circle-2" class="w-6 h-6 text-green-500"></i>
+                </div>
+                <div>
+                  <div class="text-base font-bold text-slate-900">Glicemia no alvo</div>
+                  <div class="text-xs text-slate-500 mt-0.5">118 mg/dL — Estavel</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-black text-green-500 font-mono">96%</div>
+                <div class="text-[10px] text-slate-400 font-medium">adesao</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating card: Reminder -->
+        <div class="absolute -top-5 -right-3 lg:-right-6 glass rounded-2xl p-3.5 shadow-xl border border-slate-100 hidden lg:flex items-center gap-3 z-20" style="animation:float2 5s ease-in-out infinite">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100"><i data-lucide="bell-ring" class="w-5 h-5 text-blue-600"></i></div>
+          <div><div class="text-xs font-bold text-slate-900">Proximo lembrete</div><div class="text-[10px] text-slate-400">Novorapid 8U — 15 min</div></div>
+        </div>
+
+        <!-- Floating card: Streak -->
+        <div class="absolute -bottom-3 -left-3 lg:-left-6 glass rounded-2xl p-3.5 shadow-xl border border-slate-100 hidden lg:flex items-center gap-3 z-20" style="animation:float2 5s ease-in-out 1.5s infinite">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100"><i data-lucide="flame" class="w-5 h-5 text-amber-500"></i></div>
+          <div><div class="text-xs font-bold text-slate-900">12 dias de streak</div><div class="text-[10px] text-slate-400">Novo recorde pessoal!</div></div>
+        </div>
+
+        <!-- Floating card: AI -->
+        <div class="absolute top-1/2 -left-3 lg:-left-10 glass rounded-2xl p-3.5 shadow-xl border border-slate-100 hidden lg:flex items-center gap-3 z-20" style="animation:float 7s ease-in-out 0.8s infinite">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center border border-purple-100"><i data-lucide="bot" class="w-5 h-5 text-purple-600"></i></div>
+          <div><div class="text-xs font-bold text-slate-900">IA Assistente</div><div class="text-[10px] text-slate-400">Dica personalizada</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║            TRUST TICKER                     ║
+     ╚══════════════════════════════════════════════╝ -->
+<section class="py-6 border-y border-slate-100 bg-slate-50/50 overflow-hidden">
+  <div class="ticker-track">
+    <div class="flex items-center gap-12 px-6">
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="shield-check" class="w-4 h-4 text-blue-500"></i> LGPD Compliant</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="lock" class="w-4 h-4 text-blue-500"></i> Criptografia AES-256</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="stethoscope" class="w-4 h-4 text-blue-500"></i> Validado por endocrinologistas</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="award" class="w-4 h-4 text-blue-500"></i> 2.400+ usuarios ativos</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="heart-pulse" class="w-4 h-4 text-blue-500"></i> Dados de saude protegidos</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="globe" class="w-4 h-4 text-blue-500"></i> Disponivel em todo o Brasil</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="zap" class="w-4 h-4 text-blue-500"></i> Lembretes inteligentes</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="bot" class="w-4 h-4 text-blue-500"></i> Assistente IA integrado</div>
+    </div>
+    <div class="flex items-center gap-12 px-6" aria-hidden="true">
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="shield-check" class="w-4 h-4 text-blue-500"></i> LGPD Compliant</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="lock" class="w-4 h-4 text-blue-500"></i> Criptografia AES-256</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="stethoscope" class="w-4 h-4 text-blue-500"></i> Validado por endocrinologistas</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="award" class="w-4 h-4 text-blue-500"></i> 2.400+ usuarios ativos</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="heart-pulse" class="w-4 h-4 text-blue-500"></i> Dados de saude protegidos</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="globe" class="w-4 h-4 text-blue-500"></i> Disponivel em todo o Brasil</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="zap" class="w-4 h-4 text-blue-500"></i> Lembretes inteligentes</div>
+      <div class="flex items-center gap-2 text-sm font-semibold text-slate-400 whitespace-nowrap"><i data-lucide="bot" class="w-4 h-4 text-blue-500"></i> Assistente IA integrado</div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║          NUMEROS (COUNTER)                  ║
+     ╚══════════════════════════════════════════════╝ -->
+<section class="py-20 lg:py-24">
+  <div class="max-w-6xl mx-auto px-5 lg:px-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 reveal">
+      <div class="text-center">
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 font-mono" data-count="2400">0</div>
+        <div class="text-sm text-slate-500 mt-2 font-medium">Usuarios ativos</div>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 font-mono" data-count="96">0</div>
+        <div class="text-sm text-slate-500 mt-2 font-medium">% Adesao media</div>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 font-mono" data-count="48000">0</div>
+        <div class="text-sm text-slate-500 mt-2 font-medium">Lembretes enviados</div>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl lg:text-5xl font-black text-blue-600 font-mono" data-count="4.9" data-decimals="1">0</div>
+        <div class="text-sm text-slate-500 mt-2 font-medium">Avaliacao media</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║            BENEFICIOS                       ║
+     ╚══════════════════════════════════════════════╝ -->
+<section id="beneficios" class="py-24 lg:py-32 bg-slate-50 relative overflow-hidden">
+  <div class="absolute top-0 right-0 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl -z-10"></div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-16 reveal">
+      <div class="inline-flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="heart" class="w-4 h-4"></i> Por que Glicara</div>
+      <h2 class="text-3xl sm:text-4xl lg:text-[48px] font-black tracking-tight leading-[1.1] mb-5">Sua rotina com diabetes<br><span class="grad-text">finalmente organizada</span></h2>
+      <p class="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">Cada funcionalidade resolve uma dor real. Sem complexidade, sem jargao medico.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd1">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 border border-blue-100">
+          <i data-lucide="bell-ring" class="w-7 h-7 text-blue-600"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Lembretes inteligentes</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Entende tipo de insulina, dosagem e horario. Avisa se voce atrasou. Mapa de rotacao corporal incluido.</p>
+        <div class="flex flex-wrap gap-1.5 mt-5">
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">Push</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">WhatsApp</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">Estoque</span>
+        </div>
+      </div>
+
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd2">
+        <div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mb-6 border border-green-100">
+          <i data-lucide="activity" class="w-7 h-7 text-green-600"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Controle glicemico</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Registre em 3 segundos. Graficos de evolucao, deteccao de padroes e relatorios PDF para o medico.</p>
+        <div class="flex flex-wrap gap-1.5 mt-5">
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100">7/14/30 dias</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100">Score</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100">PDF</span>
+        </div>
+      </div>
+
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd3">
+        <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mb-6 border border-amber-100">
+          <i data-lucide="utensils" class="w-7 h-7 text-amber-600"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Alimentacao guiada</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Cardapios semanais com indice glicemico, receitas praticas e lista de compras automatica.</p>
+        <div class="flex flex-wrap gap-1.5 mt-5">
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100">Cardapio</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100">Receitas</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100">IG</span>
+        </div>
+      </div>
+
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd1">
+        <div class="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center mb-6 border border-purple-100">
+          <i data-lucide="bot" class="w-7 h-7 text-purple-600"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Assistente IA</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Tire duvidas sobre insulina, alimentacao e rotina. Receba sugestoes personalizadas e insights proativos.</p>
+        <div class="flex flex-wrap gap-1.5 mt-5">
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-600 border border-purple-100">Chat</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-600 border border-purple-100">Insights</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-600 border border-purple-100">7 temas</span>
+        </div>
+      </div>
+
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd2">
+        <div class="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center mb-6 border border-rose-100">
+          <i data-lucide="map-pin" class="w-7 h-7 text-rose-600"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Medicos proximos</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Encontre endocrinologistas, nutricionistas e especialistas. Filtro por convenio, avaliacao e teleconsulta.</p>
+        <div class="flex flex-wrap gap-1.5 mt-5">
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100">GPS</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100">Avaliacoes</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100">Convenio</span>
+        </div>
+      </div>
+
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd3">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 border border-indigo-100">
+          <i data-lucide="users" class="w-7 h-7 text-indigo-600"></i>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Comunidade</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">Conecte-se com quem entende. Grupos tematicos, desafios semanais e conteudo moderado por profissionais.</p>
+        <div class="flex flex-wrap gap-1.5 mt-5">
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">Grupos</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">Desafios</span>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">Moderado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║         COMO FUNCIONA                       ║
+     ╚══════════════════════════════════════════════╝ -->
+<section id="como-funciona" class="py-24 lg:py-32 relative overflow-hidden">
+  <!-- Medical abstract background -->
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('bg-como-funciona.avif');animation:bgPanHow 22s ease-in-out infinite alternate"></div>
+    <div class="absolute inset-0 bg-white/[.88]"></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 relative z-10">
+    <div class="text-center mb-16 reveal">
+      <div class="inline-flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="route" class="w-4 h-4"></i> Como funciona</div>
+      <h2 class="text-3xl sm:text-4xl lg:text-[48px] font-black tracking-tight leading-[1.1] mb-5">Comece em menos<br>de <span class="text-blue-600">2 minutos</span></h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+      <!-- Connector line (desktop) -->
+      <div class="hidden lg:block absolute top-[72px] left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
+
+      <div class="card-hover text-center bg-white rounded-3xl border border-slate-100 p-7 relative reveal rd1">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white text-2xl font-black flex items-center justify-center mx-auto mb-5 shadow-xl shadow-blue-600/25 relative z-10">1</div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mx-auto mb-4"><i data-lucide="user-plus" class="w-6 h-6 text-blue-600"></i></div>
+        <h3 class="text-base font-bold mb-2">Crie sua conta</h3>
+        <p class="text-sm text-slate-500">Email ou Google. Gratis, sem cartao de credito.</p>
+      </div>
+      <div class="card-hover text-center bg-white rounded-3xl border border-slate-100 p-7 relative reveal rd2">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white text-2xl font-black flex items-center justify-center mx-auto mb-5 shadow-xl shadow-blue-600/25 relative z-10">2</div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mx-auto mb-4"><i data-lucide="settings" class="w-6 h-6 text-blue-600"></i></div>
+        <h3 class="text-base font-bold mb-2">Configure sua rotina</h3>
+        <p class="text-sm text-slate-500">Medicamentos, horarios e tipo de diabetes em 1 minuto.</p>
+      </div>
+      <div class="card-hover text-center bg-white rounded-3xl border border-slate-100 p-7 relative reveal rd3">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white text-2xl font-black flex items-center justify-center mx-auto mb-5 shadow-xl shadow-blue-600/25 relative z-10">3</div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mx-auto mb-4"><i data-lucide="smartphone" class="w-6 h-6 text-blue-600"></i></div>
+        <h3 class="text-base font-bold mb-2">Use no dia a dia</h3>
+        <p class="text-sm text-slate-500">Lembretes, glicemia, cardapios e comunidade.</p>
+      </div>
+      <div class="card-hover text-center bg-white rounded-3xl border border-slate-100 p-7 relative reveal rd4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 text-white text-2xl font-black flex items-center justify-center mx-auto mb-5 shadow-xl shadow-blue-600/25 relative z-10">4</div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mx-auto mb-4"><i data-lucide="trending-up" class="w-6 h-6 text-blue-600"></i></div>
+        <h3 class="text-base font-bold mb-2">Acompanhe a evolucao</h3>
+        <p class="text-sm text-slate-500">Graficos, score de saude e relatorios para o medico.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║          SHOWCASE (FEATURES)                ║
+     ╚══════════════════════════════════════════════╝ -->
+<section id="funcionalidades" class="py-24 lg:py-32 bg-slate-50 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 space-y-28">
+    <!-- Feature 1 -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center reveal">
+      <div>
+        <div class="inline-flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="bell-ring" class="w-4 h-4"></i> Lembretes</div>
+        <h3 class="text-2xl lg:text-3xl font-black tracking-tight mb-4 leading-tight">Nunca mais<br>esqueca uma dose</h3>
+        <p class="text-base text-slate-500 leading-relaxed mb-6">Configuracao por tipo de insulina (rapida, basal, ultra-rapida), dosagem exata, multiplos horarios e rotacao de local de aplicacao com mapa corporal interativo.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Notificacoes push, WhatsApp e SMS</li>
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Confirmacao com 1 toque</li>
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Alerta automatico de estoque baixo</li>
+        </ul>
+      </div>
+      <div class="rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-slate-200/60">
+        <img src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=550&fit=crop&q=85" alt="Pessoa usando app de saude" class="w-full h-auto" loading="lazy"/>
+      </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center reveal">
+      <div class="order-2 lg:order-1 rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-slate-200/60">
+        <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&h=550&fit=crop&q=85" alt="Dados medicos e graficos" class="w-full h-auto" loading="lazy"/>
+      </div>
+      <div class="order-1 lg:order-2">
+        <div class="inline-flex items-center gap-2 text-green-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="activity" class="w-4 h-4"></i> Glicemia</div>
+        <h3 class="text-2xl lg:text-3xl font-black tracking-tight mb-4 leading-tight">Graficos que<br>fazem sentido</h3>
+        <p class="text-base text-slate-500 leading-relaxed mb-6">Registre sua glicemia em 3 segundos. Visualize tendencias claras com graficos interativos de 7, 14 e 30 dias. Score de saude calculado automaticamente.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Deteccao automatica de padroes</li>
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Score de saude 0-100</li>
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Relatorio PDF pronto para o medico</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center reveal">
+      <div>
+        <div class="inline-flex items-center gap-2 text-purple-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="bot" class="w-4 h-4"></i> Assistente IA</div>
+        <h3 class="text-2xl lg:text-3xl font-black tracking-tight mb-4 leading-tight">Seu assistente<br>de saude pessoal</h3>
+        <p class="text-base text-slate-500 leading-relaxed mb-6">Chat inteligente que responde duvidas sobre insulina, alimentacao e rotina. Recebe insights automaticos baseados nos seus dados e sugere melhorias personalizadas.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>7 temas especializados em diabetes</li>
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Insights proativos automaticos</li>
+          <li class="flex items-center gap-3 text-sm text-slate-600"><div class="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center"><i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i></div>Linguagem simples e acolhedora</li>
+        </ul>
+      </div>
+      <div class="rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-slate-200/60">
+        <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&h=550&fit=crop&q=85" alt="Tecnologia e saude" class="w-full h-auto" loading="lazy"/>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║           MEDICOS PROXIMOS                  ║
+     ╚══════════════════════════════════════════════╝ -->
+<section id="medicos" class="py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="reveal">
+        <div class="inline-flex items-center gap-2 text-rose-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="map-pin" class="w-4 h-4"></i> Medicos proximos</div>
+        <h2 class="text-3xl lg:text-[42px] font-black tracking-tight leading-[1.1] mb-5">O especialista<br>certo, <span class="text-blue-600">perto de voce</span></h2>
+        <p class="text-base text-slate-500 leading-relaxed mb-8">Endocrinologistas, nutricionistas, nefrologistas e mais. Filtre por convenio, avaliacao, distancia e teleconsulta.</p>
+        <div class="space-y-3">
+          <div class="card-hover bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 shadow-sm">
+            <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=120&h=120&fit=crop&crop=face&q=80" class="w-14 h-14 rounded-xl object-cover" alt=""/>
+            <div class="flex-1"><div class="text-sm font-bold">Dra. Ana Rodrigues</div><div class="text-xs text-slate-500">Endocrinologista — CRM 45.231</div><div class="flex items-center gap-2 mt-1"><span class="text-xs text-amber-500 font-semibold">&#9733; 4.9</span><span class="text-xs text-slate-400">2.3 km</span><span class="text-[10px] bg-green-50 text-green-600 font-bold px-2 py-0.5 rounded-full">Disponivel</span></div></div>
+            <button class="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors">Agendar</button>
+          </div>
+          <div class="card-hover bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 shadow-sm">
+            <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=120&h=120&fit=crop&crop=face&q=80" class="w-14 h-14 rounded-xl object-cover" alt=""/>
+            <div class="flex-1"><div class="text-sm font-bold">Dr. Carlos Mendes</div><div class="text-xs text-slate-500">Nutricionista — CRN 12.887</div><div class="flex items-center gap-2 mt-1"><span class="text-xs text-amber-500 font-semibold">&#9733; 4.8</span><span class="text-xs text-slate-400">Teleconsulta</span><span class="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-full">Online</span></div></div>
+            <button class="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors">Agendar</button>
+          </div>
+          <div class="card-hover bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 shadow-sm">
+            <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=120&h=120&fit=crop&crop=face&q=80" class="w-14 h-14 rounded-xl object-cover" alt=""/>
+            <div class="flex-1"><div class="text-sm font-bold">Dra. Mariana Costa</div><div class="text-xs text-slate-500">Endocrinologista — CRM 38.490</div><div class="flex items-center gap-2 mt-1"><span class="text-xs text-amber-500 font-semibold">&#9733; 4.9</span><span class="text-xs text-slate-400">4.1 km</span><span class="text-[10px] bg-green-50 text-green-600 font-bold px-2 py-0.5 rounded-full">Disponivel</span></div></div>
+            <button class="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors">Agendar</button>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="rounded-3xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-slate-200/60 relative">
+          <img src="https://images.unsplash.com/photo-1581056771107-24ca5f033842?w=800&h=700&fit=crop&q=85" alt="Consulta medica" class="w-full h-auto" loading="lazy"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-blue-900/30 to-transparent"></div>
+          <div class="absolute bottom-6 left-6 right-6 glass rounded-2xl p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center"><i data-lucide="map-pin" class="w-5 h-5 text-white"></i></div>
+              <div><div class="text-sm font-bold text-slate-900">3 especialistas proximos</div><div class="text-xs text-slate-500">Encontrados na sua regiao</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║            DEPOIMENTOS                      ║
+     ╚══════════════════════════════════════════════╝ -->
+<section class="py-24 lg:py-32 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-16 reveal">
+      <div class="inline-flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="message-circle" class="w-4 h-4"></i> Depoimentos</div>
+      <h2 class="text-3xl sm:text-4xl lg:text-[48px] font-black tracking-tight">Quem usa, <span class="text-blue-600">recomenda</span></h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- 1 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd1">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"Nunca mais esqueci de aplicar minha insulina. O lembrete da Glicara entende minha rotina e me avisa no momento certo. Minha hemoglobina glicada melhorou em 3 meses."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Maria Santos</div><div class="text-xs text-slate-400">DM Tipo 1 — 8 anos</div></div>
+        </div>
+      </div>
+      <!-- 2 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd2">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"Como mae de uma crianca com diabetes tipo 1, o painel do cuidador mudou minha vida. Consigo acompanhar tudo do celular enquanto meu filho esta na escola."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Ana Oliveira</div><div class="text-xs text-slate-400">Mae de DM1 — filho de 9 anos</div></div>
+        </div>
+      </div>
+      <!-- 3 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd3">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"O assistente IA me deu dicas que meu proprio medico confirmou. E a comunidade me fez sentir que nao estou sozinho nessa jornada com diabetes."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Roberto Lima</div><div class="text-xs text-slate-400">DM Tipo 2 — 3 anos</div></div>
+        </div>
+      </div>
+      <!-- 4 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd1">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"O cardapio semanal transformou minha relacao com a comida. Antes eu tinha medo de comer errado, agora sei exatamente o que posso preparar cada dia."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Juliana Ferreira</div><div class="text-xs text-slate-400">DM Tipo 2 — 5 anos</div></div>
+        </div>
+      </div>
+      <!-- 5 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd2">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"Meu endocrinologista ficou impressionado com o relatorio PDF que levei na consulta. Ele disse que era o historico mais completo que ja recebeu de um paciente."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Carlos Eduardo</div><div class="text-xs text-slate-400">DM Tipo 1 — 12 anos</div></div>
+        </div>
+      </div>
+      <!-- 6 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd3">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"Descobri a Glicara durante a gestacao e foi essencial para controlar a diabetes gestacional. Os lembretes e o cardapio me deram seguranca nesse periodo."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Fernanda Costa</div><div class="text-xs text-slate-400">Diabetes Gestacional</div></div>
+        </div>
+      </div>
+      <!-- 7 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd1">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"Tenho 67 anos e achei que seria dificil usar tecnologia. A Glicara e tao simples que minha neta me ensinou em 5 minutos. Agora nao vivo sem."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Jose Almeida</div><div class="text-xs text-slate-400">DM Tipo 2 — 15 anos</div></div>
+        </div>
+      </div>
+      <!-- 8 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd2">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"A funcao de encontrar medicos proximos me ajudou a achar uma endocrinologista incrivel que aceita meu convenio. Antes eu nao sabia nem por onde comecar."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Camila Rodrigues</div><div class="text-xs text-slate-400">Pre-diabetes</div></div>
+        </div>
+      </div>
+      <!-- 9 -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd3">
+        <div class="flex items-center gap-0.5 text-amber-400 mb-5"><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i><i data-lucide="star" class="w-4 h-4 fill-amber-400"></i></div>
+        <p class="text-sm text-slate-600 leading-relaxed mb-6 italic">"Sou enfermeiro e indico Glicara para todos os meus pacientes diabeticos. A organizacao que o app proporciona facilita muito o acompanhamento clinico."</p>
+        <div class="flex items-center gap-3 pt-5 border-t border-slate-100">
+          <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=100&h=100&fit=crop&crop=face" class="w-12 h-12 rounded-full object-cover" alt=""/>
+          <div><div class="text-sm font-bold">Dr. Rafael Mendes</div><div class="text-xs text-slate-400">Enfermeiro — Recomenda Glicara</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║             PLANOS                          ║
+     ╚══════════════════════════════════════════════╝ -->
+<section id="planos" class="py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-6 reveal">
+      <div class="inline-flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-[.2em] mb-4"><i data-lucide="credit-card" class="w-4 h-4"></i> Planos</div>
+      <h2 class="text-3xl sm:text-4xl lg:text-[48px] font-black tracking-tight mb-4">Investimento na<br>sua <span class="text-blue-600">saude</span></h2>
+      <p class="text-lg text-slate-500">Comece gratis. Evolua quando quiser.</p>
+    </div>
+    <!-- Toggle -->
+    <div class="flex items-center justify-center gap-3 mb-14 reveal">
+      <span class="text-sm font-semibold text-slate-900" id="lm">Mensal</span>
+      <button class="relative w-14 h-8 rounded-full bg-slate-200 transition-colors" id="ptg"><div class="absolute top-[4px] left-[4px] w-6 h-6 rounded-full bg-white shadow-lg transition-transform" id="pk"></div></button>
+      <span class="text-sm font-medium text-slate-400" id="la">Anual</span>
+      <span class="text-[11px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100">Economize 17%</span>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- Free -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd1">
+        <div class="text-lg font-bold mb-1">Gratuito</div>
+        <div class="text-sm text-slate-400 mb-6">Para comecar</div>
+        <div class="flex items-baseline gap-1 mb-1"><span class="text-5xl font-black tracking-tight">R$0</span></div>
+        <div class="text-xs text-slate-400 mb-8 h-5">Para sempre</div>
+        <a href="cadastro.html" class="btn-s block text-center py-3.5 rounded-2xl text-sm font-bold mb-8">Comecar gratis</a>
+        <div class="space-y-3.5 text-sm text-slate-600">
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Ate 3 lembretes</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Registro de glicemia</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Graficos basicos</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Comunidade (leitura)</div>
+          <div class="flex items-center gap-3 text-slate-300"><i data-lucide="x" class="w-4 h-4 flex-shrink-0"></i> Relatorios PDF</div>
+          <div class="flex items-center gap-3 text-slate-300"><i data-lucide="x" class="w-4 h-4 flex-shrink-0"></i> Painel cuidador</div>
+        </div>
+      </div>
+      <!-- Essencial -->
+      <div class="card-hover bg-white rounded-3xl border-2 border-blue-600 p-8 relative shadow-2xl shadow-blue-600/10 reveal rd2">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs font-bold px-5 py-2 rounded-full shadow-lg shadow-blue-600/25">Mais popular</div>
+        <div class="text-lg font-bold mb-1">Essencial</div>
+        <div class="text-sm text-slate-400 mb-6">Controle total</div>
+        <div class="flex items-baseline gap-1 mb-1"><span class="text-5xl font-black tracking-tight" id="pe">R$19</span><span class="text-lg text-slate-400">,90/mes</span></div>
+        <div class="text-xs text-slate-400 mb-8 h-5" id="pea">&nbsp;</div>
+        <a href="cadastro.html" class="btn-p block text-center py-3.5 rounded-2xl text-sm font-bold mb-8">Comecar 7 dias gratis</a>
+        <div class="space-y-3.5 text-sm text-slate-600">
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Lembretes ilimitados</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Graficos avancados + padroes</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Cardapio semanal completo</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Comunidade completa</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Relatorio PDF para medico</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Mapa de medicos completo</div>
+        </div>
+      </div>
+      <!-- Premium -->
+      <div class="card-hover bg-white rounded-3xl border border-slate-100 p-8 reveal rd3">
+        <div class="text-lg font-bold mb-1">Premium</div>
+        <div class="text-sm text-slate-400 mb-6">Voce + familia</div>
+        <div class="flex items-baseline gap-1 mb-1"><span class="text-5xl font-black tracking-tight" id="pp">R$39</span><span class="text-lg text-slate-400">,90/mes</span></div>
+        <div class="text-xs text-slate-400 mb-8 h-5" id="ppa">&nbsp;</div>
+        <a href="cadastro.html" class="btn-s block text-center py-3.5 rounded-2xl text-sm font-bold mb-8">Comecar 7 dias gratis</a>
+        <div class="space-y-3.5 text-sm text-slate-600">
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Tudo do Essencial +</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Painel do cuidador (3)</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Lembretes WhatsApp</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Assistente IA completo</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Suporte prioritario</div>
+          <div class="flex items-center gap-3"><i data-lucide="check" class="w-4 h-4 text-blue-500 flex-shrink-0"></i> Cardapio personalizado</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║               FAQ                           ║
+     ╚══════════════════════════════════════════════╝ -->
+<section id="faq" class="py-24 lg:py-32 bg-slate-50">
+  <div class="max-w-3xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-14 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight">Perguntas <span class="text-blue-600">frequentes</span></h2>
+    </div>
+    <div class="space-y-3 reveal" id="faqList">
+      <div class="faq-item bg-white border border-slate-100 rounded-2xl overflow-hidden"><button class="faq-q w-full flex items-center justify-between p-6 text-left text-[15px] font-bold gap-4">A Glicara substitui meu medico?<i data-lucide="chevron-down" class="faq-chevron w-5 h-5 text-slate-300 flex-shrink-0 transition-transform"></i></button><div class="faq-a"><div class="px-6 pb-6 text-sm text-slate-500 leading-relaxed">Nao. A Glicara e uma ferramenta de organizacao, nao um servico medico. Nao diagnosticamos, nao prescrevemos. Sempre consulte seu medico antes de alterar tratamentos.</div></div></div>
+      <div class="faq-item bg-white border border-slate-100 rounded-2xl overflow-hidden"><button class="faq-q w-full flex items-center justify-between p-6 text-left text-[15px] font-bold gap-4">Meus dados estao seguros?<i data-lucide="chevron-down" class="faq-chevron w-5 h-5 text-slate-300 flex-shrink-0 transition-transform"></i></button><div class="faq-a"><div class="px-6 pb-6 text-sm text-slate-500 leading-relaxed">Sim. LGPD compliant. Dados criptografados em transito (TLS 1.3) e em repouso (AES-256). Exporte ou delete seus dados a qualquer momento.</div></div></div>
+      <div class="faq-item bg-white border border-slate-100 rounded-2xl overflow-hidden"><button class="faq-q w-full flex items-center justify-between p-6 text-left text-[15px] font-bold gap-4">Posso usar gratis para sempre?<i data-lucide="chevron-down" class="faq-chevron w-5 h-5 text-slate-300 flex-shrink-0 transition-transform"></i></button><div class="faq-a"><div class="px-6 pb-6 text-sm text-slate-500 leading-relaxed">Sim. O plano gratuito e permanente com 3 lembretes, registro ilimitado de glicemia, graficos basicos e comunidade em modo leitura.</div></div></div>
+      <div class="faq-item bg-white border border-slate-100 rounded-2xl overflow-hidden"><button class="faq-q w-full flex items-center justify-between p-6 text-left text-[15px] font-bold gap-4">Funciona para todos os tipos?<i data-lucide="chevron-down" class="faq-chevron w-5 h-5 text-slate-300 flex-shrink-0 transition-transform"></i></button><div class="faq-a"><div class="px-6 pb-6 text-sm text-slate-500 leading-relaxed">Sim. Tipo 1, Tipo 2, Gestacional e Pre-diabetes. A plataforma adapta conteudo, cardapios e comunidade ao seu perfil.</div></div></div>
+      <div class="faq-item bg-white border border-slate-100 rounded-2xl overflow-hidden"><button class="faq-q w-full flex items-center justify-between p-6 text-left text-[15px] font-bold gap-4">Posso cancelar quando quiser?<i data-lucide="chevron-down" class="faq-chevron w-5 h-5 text-slate-300 flex-shrink-0 transition-transform"></i></button><div class="faq-a"><div class="px-6 pb-6 text-sm text-slate-500 leading-relaxed">Sim. Cancele pelo painel. Acesso ate o fim do periodo pago, depois volta automaticamente para o plano gratuito sem perder dados.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║             CTA FINAL                       ║
+     ╚══════════════════════════════════════════════╝ -->
+<section class="py-24 lg:py-32 relative overflow-hidden">
+  <!-- Medical science background with motion -->
+  <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('bg-cta.avif');animation:bgPanCta 20s ease-in-out infinite alternate"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-blue-800/60 to-indigo-900/70"></div>
+  <div class="absolute inset-0 bg-gradient-to-t from-blue-900/40 to-transparent"></div>
+  <div class="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-blue-400/5 rounded-full blur-3xl"></div>
+  <div class="relative max-w-3xl mx-auto px-5 lg:px-8 text-center reveal">
+    <div class="w-20 h-20 rounded-3xl bg-white/10 backdrop-blur flex items-center justify-center mx-auto mb-8 shadow-2xl" style="animation:pulse-ring 3s infinite">
+      <i data-lucide="heart-pulse" class="w-10 h-10 text-white"></i>
+    </div>
+    <h2 class="text-3xl sm:text-4xl lg:text-[52px] font-black text-white tracking-tight leading-[1.1] mb-5">Comece a cuidar<br>da sua saude <span class="text-blue-200">hoje</span></h2>
+    <p class="text-lg text-blue-100/80 mb-10 max-w-lg mx-auto">Junte-se a mais de 2.400 pessoas que transformaram a forma como cuidam da diabetes.</p>
+    <a href="cadastro.html" class="inline-flex items-center gap-3 bg-white text-blue-700 font-bold text-base px-10 py-5 rounded-2xl shadow-2xl hover:shadow-[0_20px_60px_rgba(0,0,0,.2)] hover:-translate-y-1 transition-all">
+      <i data-lucide="zap" class="w-5 h-5"></i> Criar minha conta gratis
+    </a>
+    <p class="text-sm text-blue-200/50 mt-5">Sem cartao de credito. Cancele quando quiser.</p>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════╗
+     ║              FOOTER                         ║
+     ╚══════════════════════════════════════════════╝ -->
+<footer class="bg-slate-900 text-white py-16">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+      <div>
+        <div class="flex items-center gap-2.5 mb-4"><div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center"><i data-lucide="heart-pulse" class="w-4 h-4 text-white"></i></div><span class="text-lg font-extrabold">Gli<span class="text-blue-400">cara</span></span></div>
+        <p class="text-sm text-slate-400 leading-relaxed max-w-xs">Plataforma inteligente para diabetes. Rotina, alimentacao e saude em um so lugar.</p>
+      </div>
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Produto</h4><div class="space-y-2.5"><a href="#funcionalidades" class="block text-sm text-slate-400 hover:text-white transition-colors">Funcionalidades</a><a href="#planos" class="block text-sm text-slate-400 hover:text-white transition-colors">Planos</a><a href="dashboard.html" class="block text-sm text-slate-400 hover:text-white transition-colors">Dashboard</a><a href="chat.html" class="block text-sm text-slate-400 hover:text-white transition-colors">Assistente IA</a></div></div>
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Suporte</h4><div class="space-y-2.5"><a href="#faq" class="block text-sm text-slate-400 hover:text-white transition-colors">FAQ</a><a href="#" class="block text-sm text-slate-400 hover:text-white transition-colors">Contato</a><a href="#" class="block text-sm text-slate-400 hover:text-white transition-colors">Para Profissionais</a></div></div>
+      <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">Legal</h4><div class="space-y-2.5"><a href="#" class="block text-sm text-slate-400 hover:text-white transition-colors">Termos de Uso</a><a href="#" class="block text-sm text-slate-400 hover:text-white transition-colors">Privacidade</a><a href="#" class="block text-sm text-slate-400 hover:text-white transition-colors">LGPD</a></div></div>
+    </div>
+    <div class="border-t border-slate-800 pt-8 flex flex-col gap-4">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p class="text-xs text-slate-500">&copy; 2026 Glicara. Todos os direitos reservados.</p>
+        <p class="text-[10px] text-slate-600 max-w-md text-center sm:text-right leading-relaxed">Glicara nao e servico medico. Nao diagnosticamos, nao prescrevemos. Consulte seu medico.</p>
+      </div>
+      <div class="text-center border-t border-slate-800 pt-4">
+        <p class="text-[10px] text-slate-600">ABI COMERCIO DE IMPORTACAO E EXPORTACAO LTDA — CNPJ: 18.889.904/0001-85</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Nav
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function() { nav.classList.toggle('scrolled', window.scrollY > 40); }, {passive:true});
+
+  // Mobile menu
+  var mm = document.getElementById('mm');
+  document.getElementById('openMM').onclick = function() { mm.classList.remove('hidden'); };
+  document.getElementById('closeMM').onclick = function() { mm.classList.add('hidden'); };
+  document.querySelectorAll('.mml').forEach(function(l) { l.onclick = function() { mm.classList.add('hidden'); }; });
+
+  // Reveal — robust observer with fallback
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(es) { es.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); } }); }, {threshold:0, rootMargin:'0px 0px -30px 0px'});
+    revealEls.forEach(function(el) { obs.observe(el); });
+    // Fallback: if elements still hidden after 3s, force show
+    setTimeout(function() { revealEls.forEach(function(el) { if (!el.classList.contains('vis')) el.classList.add('vis'); }); }, 3000);
+  } else {
+    // No observer support — show all immediately
+    revealEls.forEach(function(el) { el.classList.add('vis'); });
+  }
+
+  // Animated counters
+  var cObs = new IntersectionObserver(function(es) { es.forEach(function(e) {
+    if (!e.isIntersecting) return;
+    var el = e.target;
+    var target = parseFloat(el.dataset.count);
+    var decimals = parseInt(el.dataset.decimals || '0');
+    var dur = 2000;
+    var start = performance.now();
+    function step(now) {
+      var p = Math.min((now - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 4);
+      var val = eased * target;
+      if (decimals) el.textContent = val.toFixed(decimals);
+      else el.textContent = Math.floor(val).toLocaleString('pt-BR');
+      if (target > 100 && !decimals) el.textContent += '+';
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    cObs.unobserve(el);
+  }); }, {threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(function(el) { cObs.observe(el); });
+
+  // FAQ
+  document.querySelectorAll('.faq-q').forEach(function(q) {
+    q.onclick = function() {
+      var item = q.closest('.faq-item');
+      var a = item.querySelector('.faq-a');
+      var open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function(fi) { fi.classList.remove('open'); fi.querySelector('.faq-a').style.maxHeight = null; });
+      if (!open) { item.classList.add('open'); a.style.maxHeight = a.scrollHeight + 'px'; }
+    };
+  });
+
+  // Pricing
+  var annual = false;
+  var ptg = document.getElementById('ptg'), pk = document.getElementById('pk');
+  ptg.onclick = function() {
+    annual = !annual;
+    pk.style.transform = annual ? 'translateX(24px)' : 'translateX(0)';
+    ptg.style.background = annual ? '#2563EB' : '#E2E8F0';
+    document.getElementById('lm').className = 'text-sm font-' + (annual ? 'medium text-slate-400' : 'semibold text-slate-900');
+    document.getElementById('la').className = 'text-sm font-' + (annual ? 'semibold text-slate-900' : 'medium text-slate-400');
+    document.getElementById('pe').textContent = annual ? 'R$16' : 'R$19';
+    document.getElementById('pp').textContent = annual ? 'R$33' : 'R$39';
+    document.getElementById('pea').textContent = annual ? 'R$191,90/ano (2 meses gratis)' : '\u00a0';
+    document.getElementById('ppa').textContent = annual ? 'R$399,90/ano (2 meses gratis)' : '\u00a0';
+  };
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.onclick = function(e) { var t = document.querySelector(this.getAttribute('href')); if (t) { e.preventDefault(); window.scrollTo({top:t.offsetTop-80,behavior:'smooth'}); } };
+  });
+});
+</script>
+</body>
+</html>

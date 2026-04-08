@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Assistente IA — Glicara</title>
+<meta name="theme-color" content="#0D9488"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+<script>
+tailwind.config={theme:{extend:{colors:{teal:{50:'#F0FDFA',100:'#CCFBF1',200:'#99F6E4',300:'#5EEAD4',400:'#2DD4BF',500:'#14B8A6',600:'#0D9488',700:'#0F766E',800:'#115E59',900:'#134E4A'}},fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']}}}}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;transition:background .3s,color .3s}
+input:focus,textarea:focus{outline:none}
+textarea{resize:none}
+
+/* ─── Theme Variables ─── */
+:root{
+  --bg-primary:#0B1120;--bg-secondary:#0F1629;--bg-card:rgba(255,255,255,0.03);
+  --bg-card-hover:rgba(255,255,255,0.06);--bg-input:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.06);--border-hover:rgba(255,255,255,0.12);
+  --text-primary:#FFFFFF;--text-secondary:rgba(255,255,255,0.6);
+  --text-muted:rgba(255,255,255,0.3);--text-dim:rgba(255,255,255,0.15);
+  --user-bubble:rgba(13,148,136,0.15);--user-border:rgba(13,148,136,0.25);
+  --ai-bubble:rgba(255,255,255,0.04);--ai-border:rgba(255,255,255,0.06);
+  --accent:#14B8A6;--accent-dim:rgba(13,148,136,0.15);
+  --scrollbar:rgba(255,255,255,0.08);
+}
+[data-theme="light"]{
+  --bg-primary:#FFFFFF;--bg-secondary:#F8FAFC;--bg-card:rgba(0,0,0,0.02);
+  --bg-card-hover:rgba(0,0,0,0.04);--bg-input:rgba(0,0,0,0.03);
+  --border:rgba(0,0,0,0.08);--border-hover:rgba(0,0,0,0.15);
+  --text-primary:#0F172A;--text-secondary:#475569;
+  --text-muted:#94A3B8;--text-dim:#CBD5E1;
+  --user-bubble:rgba(13,148,136,0.08);--user-border:rgba(13,148,136,0.2);
+  --ai-bubble:#F8FAFC;--ai-border:rgba(0,0,0,0.06);
+  --accent:#0D9488;--accent-dim:rgba(13,148,136,0.08);
+  --scrollbar:rgba(0,0,0,0.08);
+}
+
+body{background:var(--bg-primary);color:var(--text-primary)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:3px}
+
+/* ─── Sidebar ─── */
+.sidebar-link{transition:all .15s;color:var(--text-muted)}
+.sidebar-link:hover{background:var(--bg-card-hover);color:var(--text-primary)}
+.sidebar-link.active{background:var(--accent-dim);color:var(--accent);font-weight:600}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40}
+.sidebar-overlay.open{display:block}
+@media(max-width:1023px){
+  .sidebar{transform:translateX(-100%);position:fixed;z-index:50;height:100vh}
+  .sidebar.open{transform:translateX(0)}
+}
+
+/* ─── Chat ─── */
+.msg-enter{animation:msgSlide .4s cubic-bezier(.16,1,.3,1) both}
+@keyframes msgSlide{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.typing-dot{animation:bounce 1.4s infinite ease-in-out both}
+.typing-dot:nth-child(2){animation-delay:.16s}
+.typing-dot:nth-child(3){animation-delay:.32s}
+@keyframes bounce{0%,80%,100%{transform:scale(.5);opacity:.3}40%{transform:scale(1);opacity:1}}
+.insight-enter{animation:insightSlide .5s cubic-bezier(.16,1,.3,1) both}
+@keyframes insightSlide{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.chip{transition:all .2s}
+.chip:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+
+/* ─── Markdown in messages ─── */
+.prose-msg strong{color:var(--text-primary);font-weight:700}
+.prose-msg em{color:var(--text-muted);font-size:12px}
+.prose-msg code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg-card-hover);padding:1px 6px;border-radius:4px}
+.prose-msg .list-item{display:flex;align-items:flex-start;gap:6px;margin:3px 0}
+.prose-msg .list-bullet{color:var(--accent);flex-shrink:0;margin-top:2px}
+.prose-msg .heading{font-weight:700;color:var(--text-primary);margin-top:8px;margin-bottom:2px;font-size:13px}
+.prose-msg .divider{border-top:1px solid var(--border);margin:8px 0}
+.prose-msg .highlight-box{background:var(--accent-dim);border:1px solid rgba(13,148,136,0.15);border-radius:10px;padding:10px 12px;margin:6px 0}
+.prose-msg .warning-box{background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.12);border-radius:10px;padding:10px 12px;margin:6px 0}
+
+/* ─── Theme toggle ─── */
+.theme-toggle{position:relative;width:44px;height:24px;border-radius:12px;cursor:pointer;transition:background .3s}
+.theme-toggle .knob{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:white;transition:transform .3s;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.theme-toggle.dark{background:rgba(255,255,255,0.1)}
+.theme-toggle.dark .knob{transform:translateX(20px)}
+.theme-toggle.light{background:#E2E8F0}
+</style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="flex h-screen overflow-hidden">
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar w-[260px] flex flex-col transition-transform duration-300 border-r" id="sidebar"
+    style="background:var(--bg-secondary);border-color:var(--border)">
+    <div class="h-16 flex items-center px-5 border-b flex-shrink-0" style="border-color:var(--border)">
+      <a href="index.html" class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-400 flex items-center justify-center shadow-lg shadow-teal-500/20">
+          <i data-lucide="activity" class="w-4 h-4 text-white"></i>
+        </div>
+        <span class="text-lg font-extrabold tracking-tight" style="color:var(--text-primary)">Gli<span class="text-teal-500">cara</span></span>
+      </a>
+      <button class="lg:hidden ml-auto p-1 hover:opacity-80" id="close-sidebar" style="color:var(--text-muted)"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+      <a href="dashboard.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i> Dashboard</a>
+      <a href="lembretes.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="bell-ring" class="w-[18px] h-[18px]"></i> Lembretes</a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="activity" class="w-[18px] h-[18px]"></i> Glicemia</a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="salad" class="w-[18px] h-[18px]"></i> Alimentacao</a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="map-pin" class="w-[18px] h-[18px]"></i> Medicos</a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="users" class="w-[18px] h-[18px]"></i> Comunidade</a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="file-text" class="w-[18px] h-[18px]"></i> Relatorios</a>
+      <a href="chat.html" class="sidebar-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="bot" class="w-[18px] h-[18px]"></i> Assistente IA
+        <span class="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:var(--accent-dim);color:var(--accent)">IA</span></a>
+      <div class="pt-4 mt-4 border-t" style="border-color:var(--border)">
+        <p class="px-3 text-[10px] font-bold uppercase tracking-wider mb-2" style="color:var(--text-dim)">Config</p>
+        <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+          <i data-lucide="settings" class="w-[18px] h-[18px]"></i> Configuracoes</a>
+      </div>
+    </nav>
+    <!-- Sidebar sessions -->
+    <div class="px-3 pb-2 border-t" style="border-color:var(--border)">
+      <p class="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider" style="color:var(--text-dim)">Conversas recentes</p>
+      <div id="session-list" class="space-y-0.5 max-h-28 overflow-y-auto">
+        <!-- populated by JS -->
+      </div>
+      <button id="btn-new-session" class="w-full flex items-center gap-2 px-2 py-2 mt-1 rounded-lg text-xs font-medium transition-colors hover:opacity-80" style="color:var(--text-muted)">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nova conversa
+      </button>
+    </div>
+    <div class="p-3 border-t flex-shrink-0" style="border-color:var(--border)">
+      <div class="flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors" style="color:var(--text-primary)">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-cyan-400 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-teal-500/20">M</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold truncate">Maria Santos</div>
+          <div class="text-xs truncate" style="color:var(--text-muted)">Plano Premium</div>
+        </div>
+        <a href="login.html" class="hover:text-red-400 transition-colors" style="color:var(--text-dim)"><i data-lucide="log-out" class="w-4 h-4"></i></a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main class="flex-1 flex flex-col min-w-0 h-screen">
+    <!-- Header -->
+    <header class="h-14 flex items-center px-4 lg:px-6 flex-shrink-0 z-20 border-b" style="background:var(--bg-primary);border-color:var(--border)">
+      <button class="lg:hidden mr-3 p-1.5 rounded-lg transition-colors" id="open-sidebar" style="color:var(--text-secondary)"><i data-lucide="menu" class="w-5 h-5"></i></button>
+      <div class="flex items-center gap-3 flex-1">
+        <div class="relative">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-teal-500/15">
+            <i data-lucide="bot" class="w-[18px] h-[18px] text-white"></i>
+          </div>
+          <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2" style="border-color:var(--bg-primary)"></div>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold" style="color:var(--text-primary)">Assistente Glicara</h1>
+          <p class="text-[10px] flex items-center gap-1" style="color:var(--accent)">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> Online
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <!-- Theme toggle -->
+        <div class="theme-toggle dark" id="theme-toggle" title="Alternar tema">
+          <div class="knob">
+            <i data-lucide="moon" class="w-3 h-3 text-slate-600" id="theme-icon-dark" style="display:none"></i>
+            <i data-lucide="sun" class="w-3 h-3 text-amber-500" id="theme-icon-light" style="display:none"></i>
+          </div>
+        </div>
+        <button id="btn-clear" class="p-2 rounded-xl transition-colors" style="color:var(--text-dim)" title="Limpar conversa">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Messages -->
+    <div class="flex-1 overflow-y-auto" id="chat-scroll">
+      <div class="max-w-3xl mx-auto px-4 lg:px-6" id="messages-wrapper">
+        <!-- Date divider -->
+        <div class="flex items-center gap-3 py-6" id="date-divider">
+          <div class="flex-1 h-px" style="background:var(--border)"></div>
+          <span class="text-[10px] font-bold uppercase tracking-widest" style="color:var(--text-dim)" id="date-label"></span>
+          <div class="flex-1 h-px" style="background:var(--border)"></div>
+        </div>
+        <div class="space-y-4 pb-4" id="messages"></div>
+      </div>
+    </div>
+
+    <!-- Quick Chips -->
+    <div id="quick-chips" class="max-w-3xl mx-auto w-full px-4 lg:px-6 pb-2">
+      <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none" id="chips-row">
+        <button class="chip flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap border" data-msg="Me de dicas de alimentacao para hoje"
+          style="background:var(--bg-card);border-color:var(--border);color:var(--text-secondary)">
+          <i data-lucide="salad" class="w-3.5 h-3.5" style="color:var(--accent)"></i> Dicas de alimentacao
+        </button>
+        <button class="chip flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap border" data-msg="Quando devo tomar minha insulina?"
+          style="background:var(--bg-card);border-color:var(--border);color:var(--text-secondary)">
+          <i data-lucide="syringe" class="w-3.5 h-3.5 text-indigo-400"></i> Quando tomar insulina?
+        </button>
+        <button class="chip flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap border" data-msg="Como posso melhorar minha rotina com diabetes?"
+          style="background:var(--bg-card);border-color:var(--border);color:var(--text-secondary)">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Melhorar rotina
+        </button>
+        <button class="chip flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap border" data-msg="Analise meu dia de hoje e me de sugestoes"
+          style="background:var(--bg-card);border-color:var(--border);color:var(--text-secondary)">
+          <i data-lucide="scan-search" class="w-3.5 h-3.5 text-pink-400"></i> Analisar meu dia
+        </button>
+        <button class="chip flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap border" data-msg="Me ajude a entender meu score de saude"
+          style="background:var(--bg-card);border-color:var(--border);color:var(--text-secondary)">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Meu score
+        </button>
+        <button class="chip flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap border" data-msg="Quais exercicios sao seguros para diabeticos?"
+          style="background:var(--bg-card);border-color:var(--border);color:var(--text-secondary)">
+          <i data-lucide="dumbbell" class="w-3.5 h-3.5 text-cyan-400"></i> Exercicios seguros
+        </button>
+      </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="flex-shrink-0 border-t px-4 lg:px-6 py-3" style="border-color:var(--border);background:var(--bg-primary)">
+      <form id="chat-form" class="max-w-3xl mx-auto flex items-end gap-2">
+        <div class="flex-1 relative">
+          <textarea id="chat-input" rows="1" placeholder="Pergunte sobre rotina, alimentacao, insulina..."
+            class="w-full pl-4 pr-12 py-3 rounded-xl text-sm leading-relaxed max-h-32 transition-all"
+            style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary)"
+            onfocus="this.style.borderColor='rgba(13,148,136,0.4)'" onblur="this.style.borderColor='var(--border)'"
+          ></textarea>
+          <button type="submit" id="btn-send" disabled
+            class="absolute right-2 bottom-2 w-8 h-8 rounded-lg bg-gradient-to-r from-teal-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:scale-105 transition-all disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:scale-100">
+            <i data-lucide="arrow-up" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </form>
+      <p class="text-center mt-2 text-[10px] max-w-3xl mx-auto" style="color:var(--text-dim)">Glicara IA e informativa e nao substitui profissionais de saude. Consulte seu medico.</p>
+      <p class="text-center text-[10px] mt-2" style="color:var(--text-dim)">ABI COMERCIO DE IMPORTACAO E EXPORTACAO LTDA — CNPJ: 18.889.904/0001-85</p>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // ═══════════════════════════════════════
+  // CONFIGURATION
+  // ═══════════════════════════════════════
+  var STORAGE_KEY = 'glicara_chat_sessions';
+  var THEME_KEY = 'glicara_theme';
+  var ACTIVE_SESSION_KEY = 'glicara_active_session';
+
+  // User context (simulated — would come from DB)
+  var USER = {
+    name: 'Maria', type: 'Tipo 1', diagnosedYears: 8,
+    meds: [
+      { name:'Lantus', dose:'20U', type:'basal', times:['06:00'] },
+      { name:'Novorapid', dose:'8U', type:'rapida', times:['07:30','12:00','18:30'] },
+      { name:'Metformina', dose:'850mg', type:'oral', times:['12:00','20:00'] }
+    ],
+    lastGlucose: 118, avgGlucose: 124, hba1c: 6.8,
+    timeInRange: 78, adherence: 96, streak: 12, score: 82,
+    highReading: { value: 245, date: 'ontem 21:30', ctx: 'Noturno' },
+    missedDose: { med: 'Novorapid', date: 'anteontem', time: '18:30' },
+    pattern: 'Glicemia tende a subir apos almoco (media 165 mg/dL pos-almoco vs 118 jejum)'
+  };
+
+  // ═══════════════════════════════════════
+  // THEME
+  // ═══════════════════════════════════════
+  var currentTheme = localStorage.getItem(THEME_KEY) || 'dark';
+  var themeToggle = document.getElementById('theme-toggle');
+
+  function applyTheme(t) {
+    currentTheme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    themeToggle.className = 'theme-toggle ' + t;
+    document.getElementById('theme-icon-dark').style.display = t === 'dark' ? 'block' : 'none';
+    document.getElementById('theme-icon-light').style.display = t === 'light' ? 'block' : 'none';
+    localStorage.setItem(THEME_KEY, t);
+  }
+  applyTheme(currentTheme);
+
+  themeToggle.addEventListener('click', function() {
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  });
+
+  // ═══════════════════════════════════════
+  // SESSIONS (persistent history)
+  // ═══════════════════════════════════════
+  var sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  var activeSessionId = localStorage.getItem(ACTIVE_SESSION_KEY);
+
+  function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+  function getSession(id) { return sessions.find(function(s) { return s.id === id; }); }
+
+  function saveSessions() { localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions)); }
+
+  function createSession() {
+    var s = { id: genId(), title: 'Nova conversa', messages: [], created: Date.now() };
+    sessions.unshift(s);
+    activeSessionId = s.id;
+    localStorage.setItem(ACTIVE_SESSION_KEY, s.id);
+    saveSessions();
+    renderSessionList();
+    return s;
+  }
+
+  function currentSession() {
+    var s = getSession(activeSessionId);
+    if (!s) { s = createSession(); }
+    return s;
+  }
+
+  function switchSession(id) {
+    activeSessionId = id;
+    localStorage.setItem(ACTIVE_SESSION_KEY, id);
+    renderSessionList();
+    renderMessages();
+  }
+
+  function renderSessionList() {
+    var el = document.getElementById('session-list');
+    el.innerHTML = '';
+    sessions.slice(0, 8).forEach(function(s) {
+      var isActive = s.id === activeSessionId;
+      var div = document.createElement('button');
+      div.className = 'w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] truncate transition-colors';
+      div.style.color = isActive ? 'var(--accent)' : 'var(--text-muted)';
+      div.style.background = isActive ? 'var(--accent-dim)' : 'transparent';
+      div.style.fontWeight = isActive ? '600' : '400';
+      div.innerHTML = '<i data-lucide="message-square" class="w-3 h-3 flex-shrink-0"></i><span class="truncate">' + escapeHtml(s.title) + '</span>';
+      div.addEventListener('click', function() { switchSession(s.id); });
+      el.appendChild(div);
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  // Init session
+  if (!sessions.length || !getSession(activeSessionId)) createSession();
+  renderSessionList();
+
+  // ═══════════════════════════════════════
+  // DATE
+  // ═══════════════════════════════════════
+  var dias = ['Domingo','Segunda','Terca','Quarta','Quinta','Sexta','Sabado'];
+  var meses = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var now = new Date();
+  document.getElementById('date-label').textContent = dias[now.getDay()] + ', ' + now.getDate() + ' de ' + meses[now.getMonth()];
+
+  // ═══════════════════════════════════════
+  // AI KNOWLEDGE ENGINE
+  // ═══════════════════════════════════════
+  var KB = {
+    alimentacao: {
+      kw: ['comer','comida','refeicao','jantar','almoco','cafe','lanche','dieta','receita','cardapio','alimentacao','fome','indice','glicemico','ig','carboidrato','doce','fruta','arroz','pao','massa','acucar alimento','nutricionista','nutricao'],
+      fn: function() {
+        return '**Vamos falar sobre alimentacao**, ' + USER.name + '! 🍽️\n\n' +
+          'Baseado no seu perfil (DM ' + USER.type + ', HbA1c ' + USER.hba1c + '%), aqui vao sugestoes praticas:\n\n' +
+          '---\n\n' +
+          '**Sugestoes para hoje:**\n\n' +
+          '🥗 **Jantar — Frango grelhado com legumes assados**\n' +
+          '- IG Baixo | ~320 kcal | Rico em proteina e fibra\n' +
+          '- Otimo para manter glicemia estavel a noite\n\n' +
+          '🥬 **Alternativa — Salada de quinoa com atum e abacate**\n' +
+          '- IG Baixo | ~280 kcal | Omega-3 ajuda na sensibilidade a insulina\n\n' +
+          '---\n\n' +
+          '**5 regras de ouro para alimentacao diabetica:**\n\n' +
+          '1. **Inclua proteina em toda refeicao** — desacelera absorcao de glicose\n' +
+          '2. **Prefira carboidratos complexos** — integrais, legumes, aveia\n' +
+          '3. **Coma vegetais primeiro** — a fibra cria uma "barreira" para o acucar\n' +
+          '4. **Evite comer muito proximo de dormir** — dificulta controle noturno\n' +
+          '5. **Meca glicemia 2h apos refeicao** — entenda o impacto dos alimentos\n\n' +
+          '!!warning\n' +
+          USER.pattern + '. Tente trocar o arroz branco por arroz integral ou cauliflower rice no almoco.\n' +
+          '!!\n\n' +
+          '_Essas sao sugestoes gerais. Para um plano personalizado, consulte seu nutricionista._';
+      }
+    },
+    insulina: {
+      kw: ['insulina','lantus','novorapid','humalog','aplicar','aplicacao','dose','dosagem','injetar','caneta','agulha','rotacao','local','barriga','braco','coxa','tomar','horario','hora','quando'],
+      fn: function() {
+        var medsStr = USER.meds.map(function(m) { return '- **' + m.name + ' ' + m.dose + '** (' + m.type + ') — ' + m.times.join(', '); }).join('\n');
+        return '**Suas insulinas e medicamentos** 💉\n\n' +
+          medsStr + '\n\n' +
+          '---\n\n' +
+          '**Horarios ideais de aplicacao:**\n\n' +
+          '🌅 **06:00 — Lantus (basal)**\n' +
+          '- Aplicar sempre no mesmo horario\n' +
+          '- Nao precisa estar em jejum\n' +
+          '- Coxas ou gluteos (absorcao mais lenta = ideal para basal)\n\n' +
+          '🍳 **15 min antes das refeicoes — Novorapid (rapida)**\n' +
+          '- Cafe: 07:15 | Almoco: 11:45 | Jantar: 18:15\n' +
+          '- Barriga tem absorcao mais rapida (ideal para rapida)\n' +
+          '- Alternar lados: esquerdo → direito → esquerdo\n\n' +
+          '💊 **Com a refeicao — Metformina**\n' +
+          '- Sempre junto com comida (reduz efeitos gastrointestinais)\n\n' +
+          '---\n\n' +
+          '**Rotacao de aplicacao:**\n\n' +
+          '!!highlight\n' +
+          'Mantenha 2-3cm entre aplicacoes no mesmo local. Nunca aplique no mesmo ponto duas vezes seguidas. Rotacionar previne lipodistrofia (carocos na pele).\n' +
+          '!!\n\n' +
+          (USER.missedDose ? '!!warning\nVoce pulou **' + USER.missedDose.med + '** ' + USER.missedDose.date + ' as ' + USER.missedDose.time + '. Quer que eu ative lembretes mais fortes para esse horario?\n!!\n\n' : '') +
+          '_Nunca altere dosagens sem orientacao do seu endocrinologista._';
+      }
+    },
+    rotina: {
+      kw: ['rotina','melhorar','habito','dia a dia','dica','sugestao','conselho','organizar','disciplina','consistencia','mudanca','estilo vida'],
+      fn: function() {
+        return '**Vamos melhorar sua rotina!** ✨\n\n' +
+          'Analisei seus dados e identifiquei **3 areas de melhoria**:\n\n' +
+          '---\n\n' +
+          '**1. Controle pos-almoco** 🎯\n' +
+          '- Seu padrao mostra glicemia media de 165 mg/dL apos almoco\n' +
+          '- **Sugestao:** Aplique Novorapid 15min ANTES (nao durante) o almoco\n' +
+          '- **Sugestao:** Caminhe 15 min apos a refeicao\n' +
+          '- **Sugestao:** Troque carboidratos simples por complexos\n\n' +
+          '**2. Consistencia nos registros** 📊\n' +
+          '- Voce registra glicemia ~2.5x/dia (meta: 3x)\n' +
+          '- **Sugestao:** Adicione medicao pos-jantar no seu checklist\n' +
+          '- Isso melhora seu Score de Saude em ate +5 pontos\n\n' +
+          '**3. Sono e glicemia noturna** 🌙\n' +
+          '- A leitura alta de ' + USER.highReading.value + ' mg/dL (' + USER.highReading.date + ') pode indicar efeito do jantar tardio\n' +
+          '- **Sugestao:** Tente jantar ate 19:00 e medir antes de dormir\n\n' +
+          '---\n\n' +
+          '!!highlight\n' +
+          '**Resumo das acoes:**\n' +
+          '1. Novorapid 15min antes do almoco\n' +
+          '2. Caminhada pos-almoco (15min)\n' +
+          '3. Adicionar registro pos-jantar\n' +
+          '4. Jantar ate 19:00\n' +
+          '!!\n\n' +
+          'Quer que eu detalhe alguma dessas sugestoes?';
+      }
+    },
+    analisar: {
+      kw: ['analisar','analise','meu dia','hoje','resumo','status','como estou','como esta','panorama','visao geral','relatorio'],
+      fn: function() {
+        var h = new Date().getHours();
+        var periodo = h < 12 ? 'manha' : (h < 18 ? 'tarde' : 'noite');
+        return '**Analise do seu dia** 📋\n\n' +
+          'Boa ' + periodo + ', ' + USER.name + '! Aqui esta o panorama de hoje:\n\n' +
+          '---\n\n' +
+          '**Glicemia:**\n' +
+          '- Ultima: **' + USER.lastGlucose + ' mg/dL** ✅ No alvo\n' +
+          '- Media 7 dias: **' + USER.avgGlucose + ' mg/dL**\n' +
+          '- Tempo no alvo: **' + USER.timeInRange + '%** (meta: 80%)\n' +
+          '- HbA1c estimada: **' + USER.hba1c + '%** ✅\n\n' +
+          '**Medicacao:**\n' +
+          '- Adesao: **' + USER.adherence + '%** ✅ Otima\n' +
+          '- Lantus 06:00 — ✅ Feito\n' +
+          '- Metformina 12:00 — ✅ Feito\n' +
+          '- Novorapid 18:30 — ⏳ Pendente\n\n' +
+          '**Score de Saude: ' + USER.score + '/100**\n\n' +
+          '---\n\n' +
+          '!!warning\n' +
+          '**Atencao:** Leitura alta de ' + USER.highReading.value + ' mg/dL registrada ' + USER.highReading.date + '. Se ocorrer novamente, converse com seu medico sobre ajuste de dose noturna.\n' +
+          '!!\n\n' +
+          '!!highlight\n' +
+          '**Destaques positivos:**\n' +
+          '- 🔥 ' + USER.streak + ' dias de streak — novo recorde!\n' +
+          '- 📈 Adesao a medicacao em ' + USER.adherence + '%\n' +
+          '- 📉 Glicemia de jejum estavel\n' +
+          '!!\n\n' +
+          'Voce esta indo muito bem, ' + USER.name + '! Continue assim. 💪';
+      }
+    },
+    score: {
+      kw: ['score','pontuacao','nota','pontos','avaliacao','saude score','ranking'],
+      fn: function() {
+        return '**Seu Score de Saude: ' + USER.score + '/100** 🏆\n\n' +
+          'O score e calculado automaticamente com base em 4 pilares:\n\n' +
+          '---\n\n' +
+          '| Pilar | Valor | Peso | Status |\n' +
+          '| Glicemia no alvo | ' + USER.timeInRange + '% | 35% | ' + (USER.timeInRange >= 70 ? '✅' : '⚠️') + ' |\n' +
+          '| Adesao medicacao | ' + USER.adherence + '% | 30% | ✅ |\n' +
+          '| Registros consistentes | 88% | 20% | ⚠️ |\n' +
+          '| Variabilidade glicemica | Baixa | 15% | ✅ |\n\n' +
+          '---\n\n' +
+          '**Como subir para 90+:**\n\n' +
+          '1. **Glicemia no alvo (+3 pts):** Reduzir picos pos-almoco\n' +
+          '   - Sua media pos-almoco e 165 mg/dL. Meta: < 140\n' +
+          '   - Acao: Novorapid 15min antes + caminhada pos-refeicao\n\n' +
+          '2. **Registros (+5 pts):** Registrar 3x/dia consistentemente\n' +
+          '   - Atual: ~2.5x/dia. Falta adicionar pos-jantar\n' +
+          '   - Acao: Ativar lembrete de medicao as 20:30\n\n' +
+          '3. **Manter adesao (+1 pt):** Ja esta otima!\n' +
+          '   - Continue nao pulando doses\n\n' +
+          '!!highlight\n' +
+          '**Meta realista:** Chegar a **88 pontos** em 2 semanas com essas acoes.\n' +
+          '!!\n\n' +
+          'Quer que eu crie lembretes para essas metas?';
+      }
+    },
+    exercicio: {
+      kw: ['exercicio','atividade','caminhada','corrida','academia','treino','musculacao','esporte','fisica','correr','pedalar','bike','yoga','natacao'],
+      fn: function() {
+        return '**Exercicio e Diabetes** 🏃\n\n' +
+          'Atividade fisica e um dos melhores aliados no controle glicemico, ' + USER.name + '!\n\n' +
+          '---\n\n' +
+          '**Top 3 exercicios para voce:**\n\n' +
+          '🚶 **Caminhada pos-refeicao (15-30 min)**\n' +
+          '- Reduz picos de glicemia em ate 30%\n' +
+          '- Ideal apos almoco (seu ponto fraco)\n' +
+          '- Sem risco significativo de hipo\n\n' +
+          '🏋️ **Musculacao leve-moderada (3x/semana)**\n' +
+          '- Aumenta massa muscular = mais captacao de glicose\n' +
+          '- Melhora sensibilidade a insulina por ate 48h\n' +
+          '- Meca glicemia antes e depois\n\n' +
+          '🧘 **Yoga/alongamento (2-3x/semana)**\n' +
+          '- Reduz cortisol (hormonio que eleva glicemia)\n' +
+          '- Melhora sono (impacta controle noturno)\n\n' +
+          '---\n\n' +
+          '!!warning\n' +
+          '**Regras de seguranca:**\n' +
+          '- Meca glicemia ANTES de exercitar\n' +
+          '- Se < 100 mg/dL → faca um lanche primeiro\n' +
+          '- Se > 250 mg/dL → evite exercicio intenso\n' +
+          '- Tenha sempre carboidrato rapido acessivel\n' +
+          '- Hidrate-se bem\n' +
+          '!!\n\n' +
+          '_Informe seu medico sobre sua rotina de exercicios para ajustar dosagens se necessario._';
+      }
+    },
+    emocional: {
+      kw: ['ansiedade','depressao','triste','cansado','estresse','burnout','emocional','mental','psicologico','chorar','dificil','desistir','nao aguento','frustrado','medo'],
+      fn: function() {
+        return '**Voce nao esta sozinho(a)** 💚\n\n' +
+          USER.name + ', conviver com diabetes e desafiador, e seus sentimentos sao totalmente validos.\n\n' +
+          '---\n\n' +
+          '**O que voce precisa saber:**\n\n' +
+          '- **Diabetes burnout** e real e afeta ate 45% das pessoas com DM\n' +
+          '- Sentir cansaco da rotina de medicoes, injecoes e restricoes e normal\n' +
+          '- Pedir ajuda nao e fraqueza — e inteligencia\n\n' +
+          '**O que pode ajudar:**\n\n' +
+          '1. **Converse com alguem** — um psicologo especializado em doencas cronicas pode fazer muita diferenca\n' +
+          '2. **Use a Comunidade Glicara** — conecte-se com pessoas que entendem o que voce passa\n' +
+          '3. **Celebre pequenas vitorias** — 12 dias de streak e incrivel!\n' +
+          '4. **Nao busque perfeicao** — dias ruins acontecem e estao ok\n' +
+          '5. **Exercicio leve** — caminhada libera endorfinas naturais\n\n' +
+          '!!highlight\n' +
+          'Voce esta fazendo um otimo trabalho. Score 82, adesao 96%, 12 dias de streak. Isso requer muita disciplina e voce esta conseguindo. 💪\n' +
+          '!!\n\n' +
+          '_Se voce esta passando por um momento muito dificil, procure o CVV (188) ou um profissional de saude mental._';
+      }
+    }
+  };
+
+  // Fallback
+  KB._default = function(msg) {
+    return 'Boa pergunta, ' + USER.name + '! 🤔\n\n' +
+      'Deixa eu te ajudar com o que sei sobre isso.\n\n' +
+      'Com base nos seus dados atuais:\n' +
+      '- Glicemia: ' + USER.lastGlucose + ' mg/dL (media ' + USER.avgGlucose + ')\n' +
+      '- Adesao: ' + USER.adherence + '% | Score: ' + USER.score + '/100\n' +
+      '- Streak: ' + USER.streak + ' dias no alvo 🔥\n\n' +
+      'Posso te ajudar com:\n' +
+      '- 🍽️ **Alimentacao** — sugestoes e dicas\n' +
+      '- 💉 **Insulina** — horarios e rotacao\n' +
+      '- ✨ **Rotina** — melhorias personalizadas\n' +
+      '- 📋 **Analise do dia** — panorama completo\n' +
+      '- 🏆 **Score** — como melhorar\n' +
+      '- 🏃 **Exercicios** — opcoes seguras\n' +
+      '- 💚 **Apoio emocional** — voce nao esta sozinho\n\n' +
+      'Sobre o que voce quer conversar?';
+  };
+
+  function matchTopic(msg) {
+    var lower = msg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    var best = null, bestScore = 0;
+    Object.keys(KB).forEach(function(key) {
+      if (key.charAt(0) === '_') return;
+      var score = 0;
+      KB[key].kw.forEach(function(kw) { if (lower.indexOf(kw) !== -1) score++; });
+      if (score > bestScore) { bestScore = score; best = key; }
+    });
+    return (best && bestScore >= 1) ? KB[best].fn() : KB._default(msg);
+  }
+
+  // ═══════════════════════════════════════
+  // RENDERING
+  // ═══════════════════════════════════════
+  var messagesEl = document.getElementById('messages');
+  var scrollEl = document.getElementById('chat-scroll');
+  var input = document.getElementById('chat-input');
+  var sendBtn = document.getElementById('btn-send');
+
+  function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+  function timeStr(ts) { var d = new Date(ts); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+
+  function renderMarkdown(text) {
+    // Custom blocks
+    text = text.replace(/!!highlight\n([\s\S]*?)!!/g, '<div class="highlight-box">$1</div>');
+    text = text.replace(/!!warning\n([\s\S]*?)!!/g, '<div class="warning-box">$1</div>');
+    // Headings
+    text = text.replace(/^---$/gm, '<div class="divider"></div>');
+    // Bold
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    text = text.replace(/_(.*?)_/g, '<em>$1</em>');
+    // Code
+    text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+    // Tables (simple)
+    text = text.replace(/\| (.*?) \|/g, function(m) {
+      return '<span style="font-family:JetBrains Mono;font-size:11px;color:var(--text-muted)">' + m + '</span>';
+    });
+    // Line breaks & lists
+    text = text.replace(/\n\n/g, '<br><br>');
+    text = text.replace(/\n(\d+)\. /g, '<br><div class="list-item"><span class="list-bullet font-mono text-[11px]">$1.</span><span>');
+    text = text.replace(/\n- /g, '<br><div class="list-item"><span class="list-bullet">•</span><span>');
+    // Close open list items (rough)
+    text = text.replace(/<\/span><span>/g, '</span></div><div class="list-item"><span class="list-bullet">•</span><span>');
+    // Emojis pass through
+    return text;
+  }
+
+  function createMsgEl(msg, anim) {
+    var div = document.createElement('div');
+    div.className = (anim ? 'msg-enter ' : '') + 'flex gap-3 ' + (msg.role === 'user' ? 'justify-end' : '');
+
+    if (msg.role === 'assistant') {
+      div.innerHTML =
+        '<div class="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-teal-500/10">' +
+        '  <i data-lucide="bot" class="w-4 h-4 text-white"></i>' +
+        '</div>' +
+        '<div class="max-w-[88%] lg:max-w-[78%] min-w-0">' +
+        '  <div class="text-[10px] font-semibold mb-1" style="color:var(--text-dim)">Glicara IA</div>' +
+        '  <div class="prose-msg rounded-2xl rounded-tl-md px-4 py-3 text-[13px] leading-relaxed" style="background:var(--ai-bubble);border:1px solid var(--ai-border);color:var(--text-secondary)">' +
+             renderMarkdown(msg.content) +
+        '  </div>' +
+        '  <div class="text-[10px] mt-1" style="color:var(--text-dim)">' + timeStr(msg.ts) + '</div>' +
+        '</div>';
+    } else {
+      div.innerHTML =
+        '<div class="max-w-[88%] lg:max-w-[78%] min-w-0">' +
+        '  <div class="rounded-2xl rounded-tr-md px-4 py-3 text-[13px] leading-relaxed" style="background:var(--user-bubble);border:1px solid var(--user-border);color:var(--text-primary)">' +
+             escapeHtml(msg.content) +
+        '  </div>' +
+        '  <div class="text-[10px] mt-1 text-right" style="color:var(--text-dim)">' + timeStr(msg.ts) + '</div>' +
+        '</div>';
+    }
+    return div;
+  }
+
+  function createInsightEl(msg, anim) {
+    var div = document.createElement('div');
+    div.className = (anim ? 'insight-enter ' : '') + 'flex gap-3';
+    div.innerHTML =
+      '<div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-amber-500/10">' +
+      '  <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>' +
+      '</div>' +
+      '<div class="max-w-[88%] lg:max-w-[78%] min-w-0">' +
+      '  <div class="text-[10px] font-semibold mb-1 flex items-center gap-1" style="color:var(--text-dim)"><span style="color:#F59E0B">Insight automatico</span></div>' +
+      '  <div class="prose-msg rounded-2xl rounded-tl-md px-4 py-3 text-[13px] leading-relaxed" style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.12);color:var(--text-secondary)">' +
+           renderMarkdown(msg.content) +
+      '  </div>' +
+      '  <div class="text-[10px] mt-1" style="color:var(--text-dim)">' + timeStr(msg.ts) + '</div>' +
+      '</div>';
+    return div;
+  }
+
+  function renderMessages() {
+    messagesEl.innerHTML = '';
+    var s = currentSession();
+    s.messages.forEach(function(msg) {
+      var el = msg.role === 'insight' ? createInsightEl(msg, false) : createMsgEl(msg, false);
+      messagesEl.appendChild(el);
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    scrollToBottom(false);
+    // Show chips if empty or few msgs
+    document.getElementById('quick-chips').style.display = s.messages.length <= 2 ? '' : 'none';
+  }
+
+  function addMsg(role, content, anim) {
+    var s = currentSession();
+    var msg = { role: role, content: content, ts: Date.now() };
+    s.messages.push(msg);
+    // Auto-title from first user msg
+    if (role === 'user' && s.messages.filter(function(m){return m.role==='user'}).length === 1) {
+      s.title = content.substring(0, 40) + (content.length > 40 ? '...' : '');
+      renderSessionList();
+    }
+    saveSessions();
+    var el = role === 'insight' ? createInsightEl(msg, anim) : createMsgEl(msg, anim);
+    messagesEl.appendChild(el);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    scrollToBottom(true);
+    document.getElementById('quick-chips').style.display = 'none';
+  }
+
+  function addTyping() {
+    var div = document.createElement('div');
+    div.id = 'typing';
+    div.className = 'flex gap-3 msg-enter';
+    div.innerHTML =
+      '<div class="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-teal-500/10">' +
+      '  <i data-lucide="bot" class="w-4 h-4 text-white"></i>' +
+      '</div>' +
+      '<div class="rounded-2xl rounded-tl-md px-5 py-4 flex items-center gap-2" style="background:var(--ai-bubble);border:1px solid var(--ai-border)">' +
+      '  <div class="typing-dot w-2 h-2 rounded-full" style="background:var(--accent)"></div>' +
+      '  <div class="typing-dot w-2 h-2 rounded-full" style="background:var(--accent)"></div>' +
+      '  <div class="typing-dot w-2 h-2 rounded-full" style="background:var(--accent)"></div>' +
+      '  <span class="text-[11px] ml-1" style="color:var(--text-muted)">Digitando</span>' +
+      '</div>';
+    messagesEl.appendChild(div);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    scrollToBottom(true);
+  }
+
+  function removeTyping() { var el = document.getElementById('typing'); if (el) el.remove(); }
+
+  function scrollToBottom(smooth) {
+    setTimeout(function() {
+      scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    }, 60);
+  }
+
+  // ═══════════════════════════════════════
+  // SEND
+  // ═══════════════════════════════════════
+  function send(text) {
+    if (!text.trim()) return;
+    addMsg('user', text.trim(), true);
+    input.value = '';
+    sendBtn.disabled = true;
+    addTyping();
+    var delay = 700 + Math.random() * 900;
+    setTimeout(function() {
+      removeTyping();
+      var reply = matchTopic(text);
+      addMsg('assistant', reply, true);
+    }, delay);
+  }
+
+  // ═══════════════════════════════════════
+  // PROACTIVE INSIGHTS
+  // ═══════════════════════════════════════
+  var insightsSent = JSON.parse(sessionStorage.getItem('glicara_insights_sent') || '[]');
+
+  function checkInsights() {
+    var s = currentSession();
+    if (s.messages.length < 2) return; // Wait for at least one exchange
+
+    var insights = [
+      {
+        id: 'missed_dose',
+        condition: function() { return USER.missedDose && insightsSent.indexOf('missed_dose') === -1; },
+        content: '**Percebi que voce pulou ' + (USER.missedDose ? USER.missedDose.med : '') + ' ' + (USER.missedDose ? USER.missedDose.date : '') + '.** Pular doses pode afetar seu controle glicemico.\n\nQuer que eu ative **lembretes reforçados** para o horario das ' + (USER.missedDose ? USER.missedDose.time : '') + '? Posso configurar notificacao push + SMS.',
+        delay: 15000
+      },
+      {
+        id: 'high_reading',
+        condition: function() { return USER.highReading && USER.highReading.value > 200 && insightsSent.indexOf('high_reading') === -1; },
+        content: '**Leitura alta detectada:** ' + USER.highReading.value + ' mg/dL ' + USER.highReading.date + '.\n\nIsso pode estar relacionado a:\n- Refeicao com IG alto antes de dormir\n- Dose de Lantus pode precisar de ajuste\n- Estresse ou sono inadequado\n\n**Sugestao:** Meca glicemia antes de dormir por 3 dias seguidos para identificar o padrao. Quer que eu crie um lembrete?',
+        delay: 30000
+      },
+      {
+        id: 'streak_congrats',
+        condition: function() { return USER.streak >= 10 && insightsSent.indexOf('streak_congrats') === -1; },
+        content: '🔥 **' + USER.streak + ' dias de streak!** Esse e seu recorde pessoal!\n\nPoucos usuarios alcancam essa consistencia. Voce esta no **top 15%** da comunidade Glicara.\n\nContinue assim — cada dia conta para reduzir sua HbA1c a longo prazo. 💪',
+        delay: 45000
+      }
+    ];
+
+    insights.forEach(function(insight) {
+      if (insight.condition()) {
+        setTimeout(function() {
+          if (insightsSent.indexOf(insight.id) !== -1) return;
+          insightsSent.push(insight.id);
+          sessionStorage.setItem('glicara_insights_sent', JSON.stringify(insightsSent));
+          addMsg('insight', insight.content, true);
+        }, insight.delay);
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════
+  // INIT & EVENTS
+  // ═══════════════════════════════════════
+  // Load or create welcome
+  var sess = currentSession();
+  if (!sess.messages.length) {
+    addMsg('assistant',
+      'Ola ' + USER.name + '! 👋 Sou seu assistente inteligente.\n\n' +
+      'Posso te ajudar com sua **rotina**, **alimentacao** e **controle da diabetes**.\n\nO que voce precisa hoje?',
+      false
+    );
+  } else {
+    renderMessages();
+  }
+
+  // Input
+  input.addEventListener('input', function() { sendBtn.disabled = !input.value.trim(); });
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (input.value.trim()) send(input.value); }
+  });
+  document.getElementById('chat-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (input.value.trim()) send(input.value);
+  });
+
+  // Quick chips
+  document.querySelectorAll('.chip[data-msg]').forEach(function(chip) {
+    chip.addEventListener('click', function() { send(chip.dataset.msg); });
+  });
+
+  // Clear
+  document.getElementById('btn-clear').addEventListener('click', function() {
+    var s = currentSession();
+    s.messages = [];
+    s.title = 'Nova conversa';
+    saveSessions();
+    renderMessages();
+    renderSessionList();
+    document.getElementById('quick-chips').style.display = '';
+    addMsg('assistant', 'Conversa limpa! 🗑️ Como posso te ajudar, ' + USER.name + '?', false);
+  });
+
+  // New session
+  document.getElementById('btn-new-session').addEventListener('click', function() {
+    createSession();
+    renderMessages();
+    messagesEl.innerHTML = '';
+    addMsg('assistant',
+      'Ola ' + USER.name + '! 👋 Sou seu assistente inteligente.\n\n' +
+      'Posso te ajudar com sua **rotina**, **alimentacao** e **controle da diabetes**.\n\nO que voce precisa hoje?',
+      false
+    );
+    document.getElementById('quick-chips').style.display = '';
+  });
+
+  // Sidebar mobile
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  document.getElementById('open-sidebar').addEventListener('click', function() { sidebar.classList.add('open'); overlay.classList.add('open'); });
+  function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+  document.getElementById('close-sidebar').addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  // Trigger insight checks after first interaction
+  var insightCheckDone = false;
+  var origSend = send;
+  send = function(text) {
+    origSend(text);
+    if (!insightCheckDone) { insightCheckDone = true; setTimeout(checkInsights, 3000); }
+  };
+});
+</script>
+</body>
+</html>

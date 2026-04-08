@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Criar Conta — Glicara</title>
+<meta name="theme-color" content="#0D9488"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        teal: { 50:'#F0FDFA',100:'#CCFBF1',200:'#99F6E4',300:'#5EEAD4',400:'#2DD4BF',500:'#14B8A6',600:'#0D9488',700:'#0F766E',800:'#115E59',900:'#134E4A' },
+        brand: '#0D9488',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .auth-gradient { background: linear-gradient(135deg, #1E40AF 0%, #2563EB 40%, #3B82F6 100%); }
+  input:focus, select:focus { outline: none; }
+  .step { display: none; }
+  .step.active { display: block; }
+  .type-card { transition: all 0.2s; }
+  .type-card:hover { border-color: #0D9488; }
+  .type-card.selected { border-color: #0D9488; background: #F0FDFA; box-shadow: 0 0 0 2px rgba(13,148,136,0.2); }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50">
+
+<div class="min-h-screen flex">
+  <!-- LEFT: Brand Panel (same as login) -->
+  <div class="hidden lg:flex lg:w-[480px] xl:w-[520px] auth-gradient relative overflow-hidden flex-col justify-between p-10">
+    <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5"></div>
+    <div class="absolute -bottom-32 -left-16 w-96 h-96 rounded-full bg-white/[0.03]"></div>
+
+    <div class="relative z-10">
+      <a href="index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+          <i data-lucide="activity" class="w-5 h-5 text-white"></i>
+        </div>
+        <span class="text-xl font-extrabold text-white tracking-tight">Gli<span class="text-blue-200">cara</span></span>
+      </a>
+    </div>
+
+    <div class="relative z-10 space-y-8">
+      <h2 class="text-white text-2xl font-bold leading-tight">Organize sua rotina<br>com diabetes em<br><span class="text-blue-200">menos de 2 minutos</span></h2>
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="bell-ring" class="w-4 h-4 text-blue-200"></i>
+          </div>
+          <span class="text-white/80 text-sm">Lembretes inteligentes de insulina e medicamentos</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="activity" class="w-4 h-4 text-blue-200"></i>
+          </div>
+          <span class="text-white/80 text-sm">Registro e graficos de glicemia</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="salad" class="w-4 h-4 text-blue-200"></i>
+          </div>
+          <span class="text-white/80 text-sm">Cardapio semanal com indice glicemico</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="users" class="w-4 h-4 text-blue-200"></i>
+          </div>
+          <span class="text-white/80 text-sm">Comunidade de apoio moderada</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative z-10 flex gap-8">
+      <div>
+        <div class="text-2xl font-extrabold text-white">Gratis</div>
+        <div class="text-blue-200/60 text-xs font-medium">Para comecar</div>
+      </div>
+      <div>
+        <div class="text-2xl font-extrabold text-white">2 min</div>
+        <div class="text-blue-200/60 text-xs font-medium">Para configurar</div>
+      </div>
+      <div>
+        <div class="text-2xl font-extrabold text-white">100%</div>
+        <div class="text-blue-200/60 text-xs font-medium">Seguro (LGPD)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Register Form -->
+  <div class="flex-1 flex items-center justify-center p-6 sm:p-10">
+    <div class="w-full max-w-[460px]">
+      <!-- Mobile logo -->
+      <div class="lg:hidden flex items-center gap-3 mb-8">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center shadow-lg shadow-blue-600/20">
+            <i data-lucide="activity" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="text-xl font-extrabold text-slate-900 tracking-tight">Gli<span class="text-blue-600">cara</span></span>
+        </a>
+      </div>
+
+      <!-- Step indicator -->
+      <div class="flex items-center gap-2 mb-8">
+        <div class="step-dot flex items-center gap-2" data-step="1">
+          <div class="w-8 h-8 rounded-full bg-teal-600 text-white text-xs font-bold flex items-center justify-center">1</div>
+          <span class="text-sm font-medium text-blue-700 hidden sm:inline">Conta</span>
+        </div>
+        <div class="w-8 h-px bg-slate-200"></div>
+        <div class="step-dot flex items-center gap-2" data-step="2">
+          <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center">2</div>
+          <span class="text-sm font-medium text-slate-400 hidden sm:inline">Perfil</span>
+        </div>
+        <div class="w-8 h-px bg-slate-200"></div>
+        <div class="step-dot flex items-center gap-2" data-step="3">
+          <div class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center">3</div>
+          <span class="text-sm font-medium text-slate-400 hidden sm:inline">Medicamentos</span>
+        </div>
+      </div>
+
+      <!-- STEP 1: Account -->
+      <div class="step active" id="step-1">
+        <div class="mb-6">
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Crie sua conta gratis</h1>
+          <p class="text-slate-500 mt-2 text-sm">Sem cartao de credito. Configure em 2 minutos.</p>
+        </div>
+
+        <!-- Social -->
+        <div class="flex gap-3 mb-5">
+          <button class="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Google
+          </button>
+          <button class="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Apple
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3 mb-5">
+          <div class="flex-1 h-px bg-slate-200"></div>
+          <span class="text-xs text-slate-400 font-medium">ou com e-mail</span>
+          <div class="flex-1 h-px bg-slate-200"></div>
+        </div>
+
+        <form id="form-step1" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Nome completo</label>
+            <div class="relative">
+              <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+              <input type="text" id="reg-name" placeholder="Seu nome" required
+                class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">E-mail</label>
+            <div class="relative">
+              <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+              <input type="email" id="reg-email" placeholder="seu@email.com" required
+                class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">Senha</label>
+            <div class="relative">
+              <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+              <input type="password" id="reg-pass" placeholder="Minimo 8 caracteres" required
+                class="w-full h-11 pl-10 pr-4 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"/>
+            </div>
+            <div class="flex gap-1 mt-2" id="pass-strength">
+              <div class="h-1 flex-1 rounded-full bg-slate-200"></div>
+              <div class="h-1 flex-1 rounded-full bg-slate-200"></div>
+              <div class="h-1 flex-1 rounded-full bg-slate-200"></div>
+              <div class="h-1 flex-1 rounded-full bg-slate-200"></div>
+            </div>
+          </div>
+          <button type="submit"
+            class="w-full h-11 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+            Continuar
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-slate-500 mt-6">
+          Ja tem conta? <a href="login.html" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">Entrar</a>
+        </p>
+      </div>
+
+      <!-- STEP 2: Diabetes Type -->
+      <div class="step" id="step-2">
+        <div class="mb-6">
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Qual o seu tipo de diabetes?</h1>
+          <p class="text-slate-500 mt-2 text-sm">Isso nos ajuda a personalizar sua experiencia.</p>
+        </div>
+
+        <div class="space-y-3 mb-6" id="type-cards">
+          <div class="type-card cursor-pointer border border-slate-200 rounded-xl p-4 flex items-center gap-4" data-type="tipo1">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="syringe" class="w-6 h-6 text-blue-600"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-900 text-sm">Diabetes Tipo 1</div>
+              <div class="text-xs text-slate-500 mt-0.5">Producao insuficiente de insulina pelo pancreas</div>
+            </div>
+            <div class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 rounded-full bg-teal-600 hidden"></div>
+            </div>
+          </div>
+          <div class="type-card cursor-pointer border border-slate-200 rounded-xl p-4 flex items-center gap-4" data-type="tipo2">
+            <div class="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="pill" class="w-6 h-6 text-indigo-600"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-900 text-sm">Diabetes Tipo 2</div>
+              <div class="text-xs text-slate-500 mt-0.5">Resistencia a insulina, geralmente controlada com medicamentos</div>
+            </div>
+            <div class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 rounded-full bg-teal-600 hidden"></div>
+            </div>
+          </div>
+          <div class="type-card cursor-pointer border border-slate-200 rounded-xl p-4 flex items-center gap-4" data-type="gestacional">
+            <div class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="baby" class="w-6 h-6 text-pink-600"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-900 text-sm">Diabetes Gestacional</div>
+              <div class="text-xs text-slate-500 mt-0.5">Desenvolvida durante a gravidez</div>
+            </div>
+            <div class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 rounded-full bg-teal-600 hidden"></div>
+            </div>
+          </div>
+          <div class="type-card cursor-pointer border border-slate-200 rounded-xl p-4 flex items-center gap-4" data-type="pre">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="shield-alert" class="w-6 h-6 text-amber-600"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-900 text-sm">Pre-diabetes</div>
+              <div class="text-xs text-slate-500 mt-0.5">Niveis elevados de glicose, risco de desenvolver DM2</div>
+            </div>
+            <div class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 rounded-full bg-teal-600 hidden"></div>
+            </div>
+          </div>
+          <div class="type-card cursor-pointer border border-slate-200 rounded-xl p-4 flex items-center gap-4" data-type="cuidador">
+            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="heart-handshake" class="w-6 h-6 text-slate-600"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-900 text-sm">Sou cuidador(a)</div>
+              <div class="text-xs text-slate-500 mt-0.5">Acompanho um familiar ou paciente com diabetes</div>
+            </div>
+            <div class="w-5 h-5 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 rounded-full bg-teal-600 hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button id="back-to-1" class="h-11 px-5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar
+          </button>
+          <button id="to-step-3" disabled
+            class="flex-1 h-11 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-blue-600/25 disabled:hover:translate-y-0">
+            Continuar <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Medications -->
+      <div class="step" id="step-3">
+        <div class="mb-6">
+          <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Seus medicamentos</h1>
+          <p class="text-slate-500 mt-2 text-sm">Selecione os que voce usa. Voce pode adicionar mais depois.</p>
+        </div>
+
+        <div class="space-y-2 mb-6" id="med-list">
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"/>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><i data-lucide="syringe" class="w-4 h-4 text-blue-600"></i></div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-900">Insulina Lantus (Glargina)</div>
+              <div class="text-xs text-slate-500">Basal - aplicacao diaria</div>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"/>
+            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><i data-lucide="syringe" class="w-4 h-4 text-blue-600"></i></div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-900">Insulina Novorapid (Aspart)</div>
+              <div class="text-xs text-slate-500">Rapida - antes das refeicoes</div>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"/>
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center"><i data-lucide="pill" class="w-4 h-4 text-indigo-600"></i></div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-900">Metformina</div>
+              <div class="text-xs text-slate-500">Oral - controle de glicose</div>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"/>
+            <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center"><i data-lucide="syringe" class="w-4 h-4 text-purple-600"></i></div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-900">Insulina Humalog (Lispro)</div>
+              <div class="text-xs text-slate-500">Ultrarapida - refeicoes</div>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+            <input type="checkbox" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"/>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><i data-lucide="pill" class="w-4 h-4 text-amber-600"></i></div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-900">Gliclazida</div>
+              <div class="text-xs text-slate-500">Oral - estimula producao de insulina</div>
+            </div>
+          </label>
+        </div>
+
+        <button class="w-full h-10 rounded-lg border border-dashed border-slate-300 text-sm font-medium text-slate-500 hover:border-teal-400 hover:text-blue-600 hover:bg-blue-50/50 transition-all flex items-center justify-center gap-2 mb-6">
+          <i data-lucide="plus" class="w-4 h-4"></i> Adicionar outro medicamento
+        </button>
+
+        <div class="flex gap-3">
+          <button id="back-to-2" class="h-11 px-5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar
+          </button>
+          <button id="finish-register"
+            class="flex-1 h-11 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+            <i data-lucide="check" class="w-4 h-4"></i> Concluir cadastro
+          </button>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 mt-4">Voce pode pular e configurar depois</p>
+      </div>
+      <p class="text-center text-[10px] text-slate-300 mt-4">ABI COMERCIO DE IMPORTACAO E EXPORTACAO LTDA — CNPJ: 18.889.904/0001-85</p>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  var currentStep = 1;
+  var selectedType = null;
+
+  function showStep(n) {
+    currentStep = n;
+    document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById('step-' + n).classList.add('active');
+    // Update dots
+    document.querySelectorAll('.step-dot').forEach(function(d) {
+      var s = parseInt(d.dataset.step);
+      var circle = d.querySelector('div');
+      var label = d.querySelector('span');
+      if (s <= n) {
+        circle.className = 'w-8 h-8 rounded-full bg-teal-600 text-white text-xs font-bold flex items-center justify-center';
+        if (label) label.className = 'text-sm font-medium text-blue-700 hidden sm:inline';
+      } else {
+        circle.className = 'w-8 h-8 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center';
+        if (label) label.className = 'text-sm font-medium text-slate-400 hidden sm:inline';
+      }
+    });
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  // Step 1 → 2
+  document.getElementById('form-step1').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showStep(2);
+  });
+
+  // Type selection
+  document.querySelectorAll('.type-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.type-card').forEach(function(c) {
+        c.classList.remove('selected');
+        c.querySelector('.w-2\\.5').classList.add('hidden');
+      });
+      card.classList.add('selected');
+      card.querySelector('.w-2\\.5').classList.remove('hidden');
+      selectedType = card.dataset.type;
+      document.getElementById('to-step-3').disabled = false;
+    });
+  });
+
+  // Step 2 → 3
+  document.getElementById('to-step-3').addEventListener('click', function() {
+    if (selectedType) showStep(3);
+  });
+
+  // Back buttons
+  document.getElementById('back-to-1').addEventListener('click', function() { showStep(1); });
+  document.getElementById('back-to-2').addEventListener('click', function() { showStep(2); });
+
+  // Finish
+  document.getElementById('finish-register').addEventListener('click', function() {
+    window.location.href = 'dashboard.html';
+  });
+
+  // Password strength
+  var passInput = document.getElementById('reg-pass');
+  if (passInput) {
+    passInput.addEventListener('input', function() {
+      var val = this.value;
+      var score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      var bars = document.querySelectorAll('#pass-strength > div');
+      var colors = ['bg-red-400','bg-amber-400','bg-teal-400','bg-green-500'];
+      bars.forEach(function(b, i) {
+        b.className = 'h-1 flex-1 rounded-full ' + (i < score ? colors[Math.min(score-1, 3)] : 'bg-slate-200');
+      });
+    });
+  }
+});
+</script>
+</body>
+</html>

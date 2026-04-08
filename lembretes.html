@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lembretes — Glicara</title>
+<meta name="theme-color" content="#0D9488"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+<script>
+tailwind.config={theme:{extend:{colors:{teal:{50:'#F0FDFA',100:'#CCFBF1',200:'#99F6E4',300:'#5EEAD4',400:'#2DD4BF',500:'#14B8A6',600:'#0D9488',700:'#0F766E',800:'#115E59',900:'#134E4A'}},fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']}}}}
+</script>
+<style>
+body{font-family:'Inter',system-ui,sans-serif;background:#F8FAFC}
+input:focus,select:focus,textarea:focus{outline:none}
+.sidebar-link{transition:all .15s}
+.sidebar-link:hover,.sidebar-link.active{background:rgba(13,148,136,0.08);color:#0D9488}
+.sidebar-link.active{font-weight:600}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:40}
+.sidebar-overlay.open{display:block}
+@media(max-width:1023px){
+  .sidebar{transform:translateX(-100%);position:fixed;z-index:50;height:100vh}
+  .sidebar.open{transform:translateX(0)}
+}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:3px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:60;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.type-chip{transition:all .15s;cursor:pointer}
+.type-chip:hover{border-color:#0D9488}
+.type-chip.selected{border-color:#0D9488;background:#F0FDFA;box-shadow:0 0 0 2px rgba(13,148,136,0.15)}
+.reminder-card{transition:all .2s}
+.reminder-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.06);transform:translateY(-1px)}
+.tab-btn{transition:all .15s}
+.tab-btn.active{background:white;color:#0D9488;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.time-input::-webkit-calendar-picker-indicator{filter:invert(40%)}
+.toggle-track{transition:background .2s}
+.toggle-thumb{transition:transform .2s}
+</style>
+</head>
+<body class="min-h-screen">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="flex min-h-screen">
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside class="sidebar w-[260px] bg-white border-r border-slate-200 flex flex-col transition-transform duration-300" id="sidebar">
+    <div class="h-16 flex items-center px-5 border-b border-slate-100 flex-shrink-0">
+      <a href="index.html" class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-600 to-teal-500 flex items-center justify-center shadow-sm shadow-teal-500/20">
+          <i data-lucide="activity" class="w-4 h-4 text-white"></i>
+        </div>
+        <span class="text-lg font-extrabold text-slate-900 tracking-tight">Gli<span class="text-teal-600">cara</span></span>
+      </a>
+      <button class="lg:hidden ml-auto p-1 text-slate-400 hover:text-slate-600" id="close-sidebar">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      <a href="dashboard.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+        <i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i> Dashboard
+      </a>
+      <a href="lembretes.html" class="sidebar-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm">
+        <i data-lucide="bell-ring" class="w-[18px] h-[18px]"></i> Lembretes
+        <span class="ml-auto bg-teal-100 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full" id="sidebar-count">0</span>
+      </a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+        <i data-lucide="activity" class="w-[18px] h-[18px]"></i> Glicemia
+      </a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+        <i data-lucide="salad" class="w-[18px] h-[18px]"></i> Alimentacao
+      </a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+        <i data-lucide="map-pin" class="w-[18px] h-[18px]"></i> Medicos
+      </a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+        <i data-lucide="users" class="w-[18px] h-[18px]"></i> Comunidade
+      </a>
+      <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+        <i data-lucide="file-text" class="w-[18px] h-[18px]"></i> Relatorios
+      </a>
+      <a href="chat.html" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+        <i data-lucide="bot" class="w-[18px] h-[18px]"></i> Assistente IA
+        <span class="ml-auto bg-teal-100 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Novo</span>
+      </a>
+      <div class="pt-4 mt-4 border-t border-slate-100">
+        <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Config</p>
+        <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+          <i data-lucide="settings" class="w-[18px] h-[18px]"></i> Configuracoes
+        </a>
+        <a href="#" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600">
+          <i data-lucide="crown" class="w-[18px] h-[18px]"></i> Assinatura
+          <span class="ml-auto bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">PRO</span>
+        </a>
+      </div>
+    </nav>
+    <div class="p-3 border-t border-slate-100 flex-shrink-0">
+      <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-teal-400 flex items-center justify-center text-white font-bold text-sm">M</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-slate-900 truncate">Maria Santos</div>
+          <div class="text-xs text-slate-500 truncate">DM Tipo 1</div>
+        </div>
+        <a href="login.html" class="text-slate-400 hover:text-red-500 transition-colors" title="Sair">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="flex-1 min-w-0">
+    <!-- TOP BAR -->
+    <header class="h-16 bg-white/80 backdrop-blur-lg border-b border-slate-200 flex items-center px-4 lg:px-8 sticky top-0 z-30">
+      <button class="lg:hidden mr-3 p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" id="open-sidebar">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+      <div class="flex-1">
+        <h1 class="text-lg font-bold text-slate-900 tracking-tight">Lembretes</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="btn-enable-notif" class="hidden items-center gap-2 h-9 px-3.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-xs font-semibold hover:bg-amber-100 transition-colors">
+          <i data-lucide="bell" class="w-3.5 h-3.5"></i> Ativar notificacoes
+        </button>
+        <button id="btn-new-reminder" class="flex items-center gap-2 h-9 px-4 rounded-lg bg-gradient-to-r from-teal-600 to-teal-500 text-white text-sm font-semibold shadow-sm shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all">
+          <i data-lucide="plus" class="w-4 h-4"></i> Novo lembrete
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="p-4 lg:p-8 max-w-[960px] mx-auto space-y-6">
+
+      <!-- STATS -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center"><i data-lucide="list-checks" class="w-4 h-4 text-teal-600"></i></div>
+          </div>
+          <div class="font-mono text-xl font-extrabold text-slate-900" id="stat-total">0</div>
+          <div class="text-xs text-slate-500">Total ativos</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i></div>
+          </div>
+          <div class="font-mono text-xl font-extrabold text-slate-900" id="stat-done">0</div>
+          <div class="text-xs text-slate-500">Confirmados hoje</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><i data-lucide="clock" class="w-4 h-4 text-amber-600"></i></div>
+          </div>
+          <div class="font-mono text-xl font-extrabold text-slate-900" id="stat-pending">0</div>
+          <div class="text-xs text-slate-500">Pendentes hoje</div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center"><i data-lucide="percent" class="w-4 h-4 text-indigo-600"></i></div>
+          </div>
+          <div class="font-mono text-xl font-extrabold text-slate-900" id="stat-adherence">--</div>
+          <div class="text-xs text-slate-500">Adesao hoje</div>
+        </div>
+      </div>
+
+      <!-- FILTER TABS -->
+      <div class="flex items-center gap-2 bg-slate-100 rounded-xl p-1">
+        <button class="tab-btn active flex-1 text-center text-sm font-semibold py-2 rounded-lg" data-filter="all">Todos</button>
+        <button class="tab-btn flex-1 text-center text-sm font-medium text-slate-500 py-2 rounded-lg" data-filter="insulina">
+          <i data-lucide="syringe" class="w-3.5 h-3.5 inline mr-1"></i>Insulina
+        </button>
+        <button class="tab-btn flex-1 text-center text-sm font-medium text-slate-500 py-2 rounded-lg" data-filter="medicamento">
+          <i data-lucide="pill" class="w-3.5 h-3.5 inline mr-1"></i>Medicamento
+        </button>
+        <button class="tab-btn flex-1 text-center text-sm font-medium text-slate-500 py-2 rounded-lg" data-filter="alimentacao">
+          <i data-lucide="utensils" class="w-3.5 h-3.5 inline mr-1"></i>Alimentacao
+        </button>
+      </div>
+
+      <!-- REMINDERS LIST -->
+      <div id="reminders-list" class="space-y-3">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="empty-state" class="hidden text-center py-16">
+        <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="bell-off" class="w-8 h-8 text-slate-300"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-1">Nenhum lembrete ainda</h3>
+        <p class="text-sm text-slate-500 mb-4">Crie seu primeiro lembrete para nunca mais esquecer.</p>
+        <button class="inline-flex items-center gap-2 h-10 px-5 rounded-lg bg-gradient-to-r from-teal-600 to-teal-500 text-white text-sm font-semibold shadow-sm shadow-teal-500/20 hover:shadow-teal-500/30 transition-all" id="btn-new-empty">
+          <i data-lucide="plus" class="w-4 h-4"></i> Criar lembrete
+        </button>
+      </div>
+
+      <div class="text-center py-4 text-[10px] text-slate-400 border-t border-slate-100">ABI COMERCIO DE IMPORTACAO E EXPORTACAO LTDA — CNPJ: 18.889.904/0001-85</div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════ MODAL: CREATE / EDIT ══════════ -->
+<div class="modal-overlay" id="modal">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+      <h3 class="text-lg font-bold text-slate-900" id="modal-title">Novo lembrete</h3>
+      <button id="modal-close" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <form id="reminder-form" class="px-6 py-5 space-y-5">
+      <input type="hidden" id="form-id"/>
+
+      <!-- TYPE SELECTION -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Tipo</label>
+        <div class="grid grid-cols-3 gap-2" id="type-selector">
+          <div class="type-chip selected flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-200" data-type="insulina">
+            <div class="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+              <i data-lucide="syringe" class="w-5 h-5 text-teal-600"></i>
+            </div>
+            <span class="text-xs font-semibold text-slate-700">Insulina</span>
+          </div>
+          <div class="type-chip flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-200" data-type="medicamento">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+              <i data-lucide="pill" class="w-5 h-5 text-indigo-600"></i>
+            </div>
+            <span class="text-xs font-semibold text-slate-700">Medicamento</span>
+          </div>
+          <div class="type-chip flex flex-col items-center gap-2 p-3 rounded-xl border border-slate-200" data-type="alimentacao">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <i data-lucide="utensils" class="w-5 h-5 text-amber-600"></i>
+            </div>
+            <span class="text-xs font-semibold text-slate-700">Alimentacao</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NAME -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5" for="form-name">Nome</label>
+        <input type="text" id="form-name" required placeholder="Ex: Insulina Lantus 20U"
+          class="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"/>
+      </div>
+
+      <!-- DOSAGE + UNIT row -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5" for="form-dosage">Dosagem</label>
+          <input type="text" id="form-dosage" placeholder="Ex: 20"
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"/>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5" for="form-unit">Unidade</label>
+          <select id="form-unit"
+            class="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all bg-white">
+            <option value="U">U (unidades)</option>
+            <option value="mg">mg</option>
+            <option value="ml">ml</option>
+            <option value="comp">comp. (comprimido)</option>
+            <option value="gota">gotas</option>
+            <option value="">Outro</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SCHEDULE -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Horarios</label>
+        <div id="times-container" class="space-y-2">
+          <div class="flex items-center gap-2 time-row">
+            <input type="time" value="08:00" class="time-input flex-1 h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 font-mono focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"/>
+            <input type="text" placeholder="Contexto (ex: Cafe)" class="flex-1 h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"/>
+            <button type="button" class="btn-remove-time p-2 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors" title="Remover">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+        <button type="button" id="btn-add-time" class="mt-2 flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-700 transition-colors px-1 py-1">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Adicionar horario
+        </button>
+      </div>
+
+      <!-- DAYS -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Dias da semana</label>
+        <div class="flex gap-1.5" id="days-selector">
+          <button type="button" class="day-btn selected w-10 h-10 rounded-xl border border-teal-300 bg-teal-50 text-teal-700 text-xs font-bold transition-all" data-day="0">D</button>
+          <button type="button" class="day-btn selected w-10 h-10 rounded-xl border border-teal-300 bg-teal-50 text-teal-700 text-xs font-bold transition-all" data-day="1">S</button>
+          <button type="button" class="day-btn selected w-10 h-10 rounded-xl border border-teal-300 bg-teal-50 text-teal-700 text-xs font-bold transition-all" data-day="2">T</button>
+          <button type="button" class="day-btn selected w-10 h-10 rounded-xl border border-teal-300 bg-teal-50 text-teal-700 text-xs font-bold transition-all" data-day="3">Q</button>
+          <button type="button" class="day-btn selected w-10 h-10 rounded-xl border border-teal-300 bg-teal-50 text-teal-700 text-xs font-bold transition-all" data-day="4">Q</button>
+          <button type="button" class="day-btn selected w-10 h-10 rounded-xl border border-teal-300 bg-teal-50 text-teal-700 text-xs font-bold transition-all" data-day="5">S</button>
+          <button type="button" class="day-btn selected w-10 h-10 rounded-xl border border-teal-300 bg-teal-50 text-teal-700 text-xs font-bold transition-all" data-day="6">S</button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Notificacoes</label>
+        <div class="space-y-2.5">
+          <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-teal-200 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center"><i data-lucide="bell" class="w-4 h-4 text-teal-600"></i></div>
+              <div>
+                <div class="text-sm font-medium text-slate-900">Push (navegador)</div>
+                <div class="text-xs text-slate-500">Notificacao no horario exato</div>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="notif-push" checked class="sr-only peer"/>
+              <div class="toggle-track w-11 h-6 rounded-full bg-slate-200 peer-checked:bg-teal-500"></div>
+              <div class="toggle-thumb absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow peer-checked:translate-x-5"></div>
+            </div>
+          </label>
+          <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-teal-200 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center"><i data-lucide="alarm-clock" class="w-4 h-4 text-amber-600"></i></div>
+              <div>
+                <div class="text-sm font-medium text-slate-900">Lembrete antecipado</div>
+                <div class="text-xs text-slate-500">Avisa 10 minutos antes</div>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" id="notif-early" class="sr-only peer"/>
+              <div class="toggle-track w-11 h-6 rounded-full bg-slate-200 peer-checked:bg-teal-500"></div>
+              <div class="toggle-thumb absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow peer-checked:translate-x-5"></div>
+            </div>
+          </label>
+          <label class="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer hover:border-teal-200 transition-colors opacity-60">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center"><i data-lucide="message-circle" class="w-4 h-4 text-green-600"></i></div>
+              <div>
+                <div class="text-sm font-medium text-slate-900">WhatsApp <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded ml-1">PRO</span></div>
+                <div class="text-xs text-slate-500">Mensagem automatica no WhatsApp</div>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="checkbox" disabled class="sr-only peer"/>
+              <div class="toggle-track w-11 h-6 rounded-full bg-slate-200"></div>
+              <div class="toggle-thumb absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1.5" for="form-notes">Observacoes (opcional)</label>
+        <textarea id="form-notes" rows="2" placeholder="Ex: Aplicar na barriga, alternar lados..."
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all resize-none"></textarea>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex gap-3 pt-2">
+        <button type="button" id="btn-delete" class="hidden h-11 px-4 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors flex items-center gap-2">
+          <i data-lucide="trash-2" class="w-4 h-4"></i> Excluir
+        </button>
+        <div class="flex-1"></div>
+        <button type="button" id="btn-cancel" class="h-11 px-5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">Cancelar</button>
+        <button type="submit" class="h-11 px-6 rounded-xl bg-gradient-to-r from-teal-600 to-teal-500 text-white text-sm font-semibold shadow-sm shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all flex items-center gap-2">
+          <i data-lucide="check" class="w-4 h-4"></i> <span id="btn-save-text">Salvar</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div id="toast" class="fixed bottom-6 right-6 z-[70] transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+  <div class="flex items-center gap-3 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
+    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400" id="toast-icon"></i>
+    <span id="toast-msg">Lembrete salvo!</span>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  // ═══════════════ STATE ═══════════════
+  var STORAGE_KEY = 'glicara_reminders';
+  var reminders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  var currentFilter = 'all';
+  var editingId = null;
+
+  // Seed demo data if empty
+  if (!reminders.length) {
+    reminders = [
+      { id: genId(), type:'insulina', name:'Insulina Lantus', dosage:'20', unit:'U', times:[{time:'06:00',ctx:'Basal (manha)'}], days:[0,1,2,3,4,5,6], notifPush:true, notifEarly:false, notes:'Aplicar na barriga, alternar lados', active:true, todayStatus:{} },
+      { id: genId(), type:'insulina', name:'Novorapid', dosage:'8', unit:'U', times:[{time:'07:30',ctx:'Cafe'},{time:'12:00',ctx:'Almoco'},{time:'18:30',ctx:'Jantar'}], days:[0,1,2,3,4,5,6], notifPush:true, notifEarly:true, notes:'Rapida - aplicar 15min antes da refeicao', active:true, todayStatus:{} },
+      { id: genId(), type:'medicamento', name:'Metformina', dosage:'850', unit:'mg', times:[{time:'12:00',ctx:'Almoco'},{time:'20:00',ctx:'Jantar'}], days:[0,1,2,3,4,5,6], notifPush:true, notifEarly:false, notes:'Tomar junto com a refeicao', active:true, todayStatus:{} },
+      { id: genId(), type:'alimentacao', name:'Medir glicemia pos-refeicao', dosage:'', unit:'', times:[{time:'09:00',ctx:'Pos-cafe'},{time:'14:00',ctx:'Pos-almoco'}], days:[1,2,3,4,5], notifPush:true, notifEarly:false, notes:'Medir 2h apos a refeicao', active:true, todayStatus:{} }
+    ];
+    // Mark some as done for demo
+    var dk1 = todayKey();
+    reminders[0].todayStatus[dk1+'_06:00'] = 'done';
+    reminders[1].todayStatus[dk1+'_07:30'] = 'done';
+    reminders[1].todayStatus[dk1+'_12:00'] = 'done';
+    reminders[2].todayStatus[dk1+'_12:00'] = 'done';
+    save();
+  }
+
+  function genId() { return 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+  function todayKey() { var d = new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(reminders)); }
+
+  // ═══════════════ RENDER ═══════════════
+  var listEl = document.getElementById('reminders-list');
+  var emptyEl = document.getElementById('empty-state');
+
+  function getTypeConfig(type) {
+    var m = {
+      insulina:    { icon:'syringe',  bg:'bg-teal-50',   color:'text-teal-600',   badge:'bg-teal-100 text-teal-700',   label:'Insulina' },
+      medicamento: { icon:'pill',     bg:'bg-indigo-50',  color:'text-indigo-600', badge:'bg-indigo-100 text-indigo-700', label:'Medicamento' },
+      alimentacao: { icon:'utensils', bg:'bg-amber-50',   color:'text-amber-600',  badge:'bg-amber-100 text-amber-700',  label:'Alimentacao' }
+    };
+    return m[type] || m.insulina;
+  }
+
+  function isDueToday(r) {
+    return r.days.indexOf(new Date().getDay()) !== -1;
+  }
+
+  function render() {
+    var filtered = reminders.filter(function(r) {
+      if (!r.active) return false;
+      if (currentFilter === 'all') return true;
+      return r.type === currentFilter;
+    });
+
+    if (!filtered.length) {
+      listEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      updateStats();
+      return;
+    }
+    emptyEl.classList.add('hidden');
+
+    // Sort: due today first, then by earliest time
+    filtered.sort(function(a, b) {
+      var aToday = isDueToday(a);
+      var bToday = isDueToday(b);
+      if (aToday && !bToday) return -1;
+      if (!aToday && bToday) return 1;
+      var aTime = a.times.length ? a.times[0].time : '99:99';
+      var bTime = b.times.length ? b.times[0].time : '99:99';
+      return aTime.localeCompare(bTime);
+    });
+
+    var html = '';
+    var dk = todayKey();
+
+    filtered.forEach(function(r) {
+      var tc = getTypeConfig(r.type);
+      var dueToday = isDueToday(r);
+
+      // Build time pills
+      var timesHtml = '';
+      r.times.forEach(function(t) {
+        var statusKey = dk + '_' + t.time;
+        var isDone = r.todayStatus[statusKey] === 'done';
+        var isSkipped = r.todayStatus[statusKey] === 'skipped';
+        var pillClass = '';
+        var pillContent = '';
+
+        if (!dueToday) {
+          pillClass = 'bg-slate-100 text-slate-500';
+          pillContent = '<span class="font-mono font-semibold">' + t.time + '</span>';
+          if (t.ctx) pillContent += ' <span class="text-slate-400">·</span> ' + t.ctx;
+        } else if (isDone) {
+          pillClass = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+          pillContent = '<i data-lucide="check" class="w-3 h-3 inline"></i> <span class="font-mono font-semibold">' + t.time + '</span>';
+          if (t.ctx) pillContent += ' <span class="text-emerald-400">·</span> ' + t.ctx;
+        } else if (isSkipped) {
+          pillClass = 'bg-slate-100 text-slate-400 line-through';
+          pillContent = '<span class="font-mono font-semibold">' + t.time + '</span>';
+          if (t.ctx) pillContent += ' · ' + t.ctx;
+        } else {
+          pillClass = 'bg-amber-50 text-amber-700 border border-amber-200';
+          pillContent = '<i data-lucide="clock" class="w-3 h-3 inline"></i> <span class="font-mono font-semibold">' + t.time + '</span>';
+          if (t.ctx) pillContent += ' <span class="text-amber-400">·</span> ' + t.ctx;
+        }
+
+        timesHtml += '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium ' + pillClass + '">' + pillContent + '</span>';
+      });
+
+      // Action buttons for today
+      var actionsHtml = '';
+      if (dueToday) {
+        var allDone = true;
+        r.times.forEach(function(t) {
+          var sk = dk + '_' + t.time;
+          if (r.todayStatus[sk] !== 'done' && r.todayStatus[sk] !== 'skipped') allDone = false;
+        });
+
+        if (!allDone) {
+          actionsHtml = '<div class="flex gap-1.5 mt-3 pt-3 border-t border-slate-100">';
+          r.times.forEach(function(t) {
+            var sk = dk + '_' + t.time;
+            if (!r.todayStatus[sk]) {
+              actionsHtml += '<button class="btn-confirm flex items-center gap-1.5 h-8 px-3 rounded-lg bg-teal-50 text-teal-700 text-[11px] font-bold hover:bg-teal-100 transition-colors" data-rid="' + r.id + '" data-time="' + t.time + '" data-action="done">';
+              actionsHtml += '<i data-lucide="check" class="w-3 h-3"></i> ' + t.time + ' Feito</button>';
+              actionsHtml += '<button class="btn-confirm flex items-center gap-1.5 h-8 px-3 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-medium hover:bg-slate-200 transition-colors" data-rid="' + r.id + '" data-time="' + t.time + '" data-action="skipped">';
+              actionsHtml += '<i data-lucide="x" class="w-3 h-3"></i> Pular</button>';
+            }
+          });
+          actionsHtml += '</div>';
+        }
+      }
+
+      // Dosage display
+      var dosageText = '';
+      if (r.dosage) dosageText = r.dosage + (r.unit ? ' ' + r.unit : '');
+
+      // Due badge
+      var dueBadge = dueToday
+        ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-600">Hoje</span>'
+        : '<span class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">Outros dias</span>';
+
+      html += '<div class="reminder-card bg-white rounded-xl border border-slate-200 p-4 lg:p-5" data-id="' + r.id + '">';
+      html += '  <div class="flex items-start gap-3">';
+      html += '    <div class="w-11 h-11 rounded-xl ' + tc.bg + ' flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="' + tc.icon + '" class="w-5 h-5 ' + tc.color + '"></i></div>';
+      html += '    <div class="flex-1 min-w-0">';
+      html += '      <div class="flex items-center gap-2 mb-1 flex-wrap">';
+      html += '        <span class="text-sm font-bold text-slate-900">' + r.name + '</span>';
+      if (dosageText) html += '        <span class="text-xs font-mono font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">' + dosageText + '</span>';
+      html += '        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' + tc.badge + '">' + tc.label + '</span>';
+      html += '        ' + dueBadge;
+      html += '      </div>';
+      html += '      <div class="flex flex-wrap gap-1.5 mt-2">' + timesHtml + '</div>';
+      if (r.notes) html += '      <p class="text-xs text-slate-400 mt-2 leading-relaxed">' + r.notes + '</p>';
+      html += actionsHtml;
+      html += '    </div>';
+      html += '    <button class="btn-edit p-2 rounded-lg text-slate-300 hover:text-teal-600 hover:bg-teal-50 transition-colors flex-shrink-0" data-id="' + r.id + '" title="Editar">';
+      html += '      <i data-lucide="pencil" class="w-4 h-4"></i>';
+      html += '    </button>';
+      html += '  </div>';
+      html += '</div>';
+    });
+
+    listEl.innerHTML = html;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    bindCardEvents();
+    updateStats();
+  }
+
+  function updateStats() {
+    var dk = todayKey();
+    var totalActive = reminders.filter(function(r) { return r.active; }).length;
+    var todayReminders = reminders.filter(function(r) { return r.active && isDueToday(r); });
+    var totalSlots = 0;
+    var doneSlots = 0;
+    var pendingSlots = 0;
+
+    todayReminders.forEach(function(r) {
+      r.times.forEach(function(t) {
+        totalSlots++;
+        var sk = dk + '_' + t.time;
+        if (r.todayStatus[sk] === 'done') doneSlots++;
+        else if (r.todayStatus[sk] !== 'skipped') pendingSlots++;
+      });
+    });
+
+    document.getElementById('stat-total').textContent = totalActive;
+    document.getElementById('stat-done').textContent = doneSlots;
+    document.getElementById('stat-pending').textContent = pendingSlots;
+    document.getElementById('stat-adherence').textContent = totalSlots ? Math.round(doneSlots / totalSlots * 100) + '%' : '--';
+    document.getElementById('sidebar-count').textContent = totalActive;
+  }
+
+  function bindCardEvents() {
+    // Edit buttons
+    document.querySelectorAll('.btn-edit').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var r = reminders.find(function(x) { return x.id === btn.dataset.id; });
+        if (r) openEditModal(r);
+      });
+    });
+    // Confirm/skip buttons
+    document.querySelectorAll('.btn-confirm').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var r = reminders.find(function(x) { return x.id === btn.dataset.rid; });
+        if (r) {
+          var dk = todayKey();
+          r.todayStatus[dk + '_' + btn.dataset.time] = btn.dataset.action;
+          save();
+          render();
+          showToast(btn.dataset.action === 'done' ? 'Confirmado!' : 'Pulado');
+          // Browser notification on confirm
+          if (btn.dataset.action === 'done' && Notification.permission === 'granted') {
+            new Notification('Glicara', { body: r.name + ' - ' + btn.dataset.time + ' confirmado!', icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="%230D9488"/><text x="16" y="22" text-anchor="middle" fill="white" font-size="16" font-family="sans-serif">G</text></svg>' });
+          }
+        }
+      });
+    });
+  }
+
+  // ═══════════════ MODAL ═══════════════
+  var modal = document.getElementById('modal');
+  var form = document.getElementById('reminder-form');
+
+  function openModal() { modal.classList.add('open'); }
+  function closeModal() { modal.classList.remove('open'); editingId = null; }
+
+  function resetForm() {
+    form.reset();
+    document.getElementById('form-id').value = '';
+    document.getElementById('modal-title').textContent = 'Novo lembrete';
+    document.getElementById('btn-save-text').textContent = 'Salvar';
+    document.getElementById('btn-delete').classList.add('hidden');
+    document.getElementById('btn-delete').style.display = 'none';
+    // Reset type
+    document.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('selected'); });
+    document.querySelector('.type-chip[data-type="insulina"]').classList.add('selected');
+    // Reset days
+    document.querySelectorAll('.day-btn').forEach(function(b) {
+      b.classList.add('selected');
+      b.classList.add('border-teal-300','bg-teal-50','text-teal-700');
+      b.classList.remove('border-slate-200','bg-white','text-slate-500');
+    });
+    // Reset times to single
+    var tc = document.getElementById('times-container');
+    tc.innerHTML = buildTimeRow('08:00','');
+    // Reset notifs
+    document.getElementById('notif-push').checked = true;
+    document.getElementById('notif-early').checked = false;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+
+  function buildTimeRow(time, ctx) {
+    return '<div class="flex items-center gap-2 time-row">' +
+      '<input type="time" value="' + time + '" class="time-input flex-1 h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 font-mono focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"/>' +
+      '<input type="text" value="' + (ctx||'') + '" placeholder="Contexto (ex: Cafe)" class="flex-1 h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"/>' +
+      '<button type="button" class="btn-remove-time p-2 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors" title="Remover"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>';
+  }
+
+  function openNewModal() {
+    resetForm();
+    editingId = null;
+    openModal();
+  }
+
+  function openEditModal(r) {
+    resetForm();
+    editingId = r.id;
+    document.getElementById('form-id').value = r.id;
+    document.getElementById('modal-title').textContent = 'Editar lembrete';
+    document.getElementById('btn-save-text').textContent = 'Atualizar';
+    document.getElementById('btn-delete').classList.remove('hidden');
+    document.getElementById('btn-delete').style.display = 'flex';
+    // Type
+    document.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('selected'); });
+    var typeEl = document.querySelector('.type-chip[data-type="'+r.type+'"]');
+    if (typeEl) typeEl.classList.add('selected');
+    // Fields
+    document.getElementById('form-name').value = r.name;
+    document.getElementById('form-dosage').value = r.dosage || '';
+    document.getElementById('form-unit').value = r.unit || '';
+    document.getElementById('form-notes').value = r.notes || '';
+    // Times
+    var tc = document.getElementById('times-container');
+    tc.innerHTML = '';
+    r.times.forEach(function(t) { tc.insertAdjacentHTML('beforeend', buildTimeRow(t.time, t.ctx)); });
+    // Days
+    document.querySelectorAll('.day-btn').forEach(function(b) {
+      var d = parseInt(b.dataset.day);
+      if (r.days.indexOf(d) !== -1) {
+        b.classList.add('selected','border-teal-300','bg-teal-50','text-teal-700');
+        b.classList.remove('border-slate-200','bg-white','text-slate-500');
+      } else {
+        b.classList.remove('selected','border-teal-300','bg-teal-50','text-teal-700');
+        b.classList.add('border-slate-200','bg-white','text-slate-500');
+      }
+    });
+    // Notifs
+    document.getElementById('notif-push').checked = !!r.notifPush;
+    document.getElementById('notif-early').checked = !!r.notifEarly;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    openModal();
+  }
+
+  // Type selection
+  document.querySelectorAll('.type-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.type-chip').forEach(function(c) { c.classList.remove('selected'); });
+      chip.classList.add('selected');
+    });
+  });
+
+  // Day selection
+  document.querySelectorAll('.day-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btn.classList.toggle('selected');
+      if (btn.classList.contains('selected')) {
+        btn.classList.add('border-teal-300','bg-teal-50','text-teal-700');
+        btn.classList.remove('border-slate-200','bg-white','text-slate-500');
+      } else {
+        btn.classList.remove('border-teal-300','bg-teal-50','text-teal-700');
+        btn.classList.add('border-slate-200','bg-white','text-slate-500');
+      }
+    });
+  });
+
+  // Add time row
+  document.getElementById('btn-add-time').addEventListener('click', function() {
+    var tc = document.getElementById('times-container');
+    tc.insertAdjacentHTML('beforeend', buildTimeRow('12:00',''));
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    bindTimeRemove();
+  });
+
+  function bindTimeRemove() {
+    document.querySelectorAll('.btn-remove-time').forEach(function(btn) {
+      btn.onclick = function() {
+        var rows = document.querySelectorAll('.time-row');
+        if (rows.length > 1) btn.closest('.time-row').remove();
+      };
+    });
+  }
+  bindTimeRemove();
+
+  // Form submit
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var type = document.querySelector('.type-chip.selected')?.dataset.type || 'insulina';
+    var name = document.getElementById('form-name').value.trim();
+    var dosage = document.getElementById('form-dosage').value.trim();
+    var unit = document.getElementById('form-unit').value;
+    var notes = document.getElementById('form-notes').value.trim();
+    var notifPush = document.getElementById('notif-push').checked;
+    var notifEarly = document.getElementById('notif-early').checked;
+
+    // Collect times
+    var times = [];
+    document.querySelectorAll('.time-row').forEach(function(row) {
+      var inputs = row.querySelectorAll('input');
+      var t = inputs[0].value;
+      var c = inputs[1].value.trim();
+      if (t) times.push({time:t, ctx:c});
+    });
+
+    // Collect days
+    var days = [];
+    document.querySelectorAll('.day-btn.selected').forEach(function(b) {
+      days.push(parseInt(b.dataset.day));
+    });
+
+    if (!name || !times.length) return;
+
+    if (editingId) {
+      var r = reminders.find(function(x) { return x.id === editingId; });
+      if (r) {
+        r.type = type; r.name = name; r.dosage = dosage; r.unit = unit;
+        r.times = times; r.days = days; r.notes = notes;
+        r.notifPush = notifPush; r.notifEarly = notifEarly;
+      }
+      showToast('Lembrete atualizado!');
+    } else {
+      reminders.push({
+        id: genId(), type:type, name:name, dosage:dosage, unit:unit,
+        times:times, days:days, notifPush:notifPush, notifEarly:notifEarly,
+        notes:notes, active:true, todayStatus:{}
+      });
+      showToast('Lembrete criado!');
+    }
+    save();
+    closeModal();
+    render();
+
+    // Request notification permission
+    if (notifPush && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  });
+
+  // Delete
+  document.getElementById('btn-delete').addEventListener('click', function() {
+    if (editingId && confirm('Excluir este lembrete?')) {
+      reminders = reminders.filter(function(r) { return r.id !== editingId; });
+      save();
+      closeModal();
+      render();
+      showToast('Lembrete excluido');
+    }
+  });
+
+  // Cancel / close
+  document.getElementById('btn-cancel').addEventListener('click', closeModal);
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+
+  // New buttons
+  document.getElementById('btn-new-reminder').addEventListener('click', openNewModal);
+  document.getElementById('btn-new-empty').addEventListener('click', openNewModal);
+
+  // ═══════════════ TABS ═══════════════
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+        b.classList.add('text-slate-500');
+        b.classList.remove('text-teal-600');
+      });
+      btn.classList.add('active');
+      btn.classList.remove('text-slate-500');
+      currentFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  // ═══════════════ NOTIFICATIONS ═══════════════
+  var notifBtn = document.getElementById('btn-enable-notif');
+  if ('Notification' in window) {
+    if (Notification.permission === 'default') {
+      notifBtn.style.display = 'flex';
+      notifBtn.addEventListener('click', function() {
+        Notification.requestPermission().then(function(perm) {
+          if (perm === 'granted') {
+            notifBtn.style.display = 'none';
+            showToast('Notificacoes ativadas!');
+            new Notification('Glicara', { body: 'Voce recebera lembretes nos horarios configurados.' });
+          }
+        });
+      });
+    }
+  }
+
+  // Check for due reminders every 30s
+  setInterval(function() {
+    if (Notification.permission !== 'granted') return;
+    var now = new Date();
+    var hh = String(now.getHours()).padStart(2,'0');
+    var mm = String(now.getMinutes()).padStart(2,'0');
+    var nowTime = hh + ':' + mm;
+    var dk = todayKey();
+
+    reminders.forEach(function(r) {
+      if (!r.active || !r.notifPush || !isDueToday(r)) return;
+      r.times.forEach(function(t) {
+        var sk = dk + '_' + t.time;
+        if (t.time === nowTime && !r.todayStatus[sk] && !r._notified?.[sk]) {
+          new Notification('Glicara — Hora do lembrete!', {
+            body: r.name + (r.dosage ? ' ' + r.dosage + (r.unit||'') : '') + (t.ctx ? ' — ' + t.ctx : ''),
+            tag: sk
+          });
+          if (!r._notified) r._notified = {};
+          r._notified[sk] = true;
+        }
+        // Early notification (10min before)
+        if (r.notifEarly) {
+          var parts = t.time.split(':');
+          var earlyDate = new Date();
+          earlyDate.setHours(parseInt(parts[0]), parseInt(parts[1]) - 10, 0);
+          var earlyHH = String(earlyDate.getHours()).padStart(2,'0');
+          var earlyMM = String(earlyDate.getMinutes()).padStart(2,'0');
+          var earlyTime = earlyHH + ':' + earlyMM;
+          var earlyKey = 'early_' + sk;
+          if (earlyTime === nowTime && !r._notified?.[earlyKey]) {
+            new Notification('Glicara — Em 10 minutos', {
+              body: r.name + ' as ' + t.time + (t.ctx ? ' — ' + t.ctx : ''),
+              tag: earlyKey
+            });
+            if (!r._notified) r._notified = {};
+            r._notified[earlyKey] = true;
+          }
+        }
+      });
+    });
+  }, 30000);
+
+  // ═══════════════ SIDEBAR MOBILE ═══════════════
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebar-overlay');
+  document.getElementById('open-sidebar').addEventListener('click', function() {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+  });
+  function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+  document.getElementById('close-sidebar').addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  // ═══════════════ TOAST ═══════════════
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.classList.remove('translate-y-20','opacity-0','pointer-events-none');
+    t.classList.add('translate-y-0','opacity-100');
+    setTimeout(function() {
+      t.classList.add('translate-y-20','opacity-0','pointer-events-none');
+      t.classList.remove('translate-y-0','opacity-100');
+    }, 2500);
+  }
+
+  // ═══════════════ INIT ═══════════════
+  render();
+});
+</script>
+</body>
+</html>
